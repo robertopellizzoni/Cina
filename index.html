@@ -833,11 +833,6 @@ section.active{display:block;animation:fade .35s ease}
   width:100%;
 }
 .day-hero-edit input{display:none}
-.day-card-photo-admin{padding:10px 14px 0;background:#fff}
-.day-card-photo-admin .day-hero-edit{margin:0;font-size:12px;padding:8px 10px}
-.day-card-photo-admin .day-hero-edit.has-photo{height:54px}
-.day-card-photo-admin .day-hero-edit.has-photo .photo-actions{bottom:6px;right:6px}
-.day-card-photo-admin .day-hero-edit.has-photo .photo-actions button{padding:5px 8px;font-size:10.5px}
 .day-hero-edit.has-photo{padding:0;border:1px solid rgba(163,123,42,.3);height:160px;position:relative;overflow:hidden}
 .day-hero-edit.has-photo .photo-preview{
   position:absolute;inset:0;background-size:cover;background-position:center;
@@ -1952,17 +1947,19 @@ function persistPhotos(){ localStorage.setItem(PHOTO_KEY, JSON.stringify(PHOTOS)
 function photoKey(dayN, name){ return `${dayN}::${name}`; }
 
 // =============================================================
-// SUPABASE CLOUD SYNC + ADMIN LOGIN
+// SUPABASE CLOUD SYNC
 // =============================================================
+// To enable cloud sync, replace these two values with your project's credentials.
+// Until you do, the app works exactly as before (localStorage only).
 const SUPABASE_URL  = "https://jfeplzspcqtxgmranibd.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmZXBsenNwY3F0eGdtcmFuaWJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNDAwMDYsImV4cCI6MjA5MzgxNjAwNn0.sXlpBpLQtnzB1PssIrJ8lIYA0t692trEyGTpKKJmdP8";
 const SUPABASE_BUCKET = "foto-cina";
 const SUPABASE_TABLE = "trip_data";
 const SUPABASE_RECORD_ID = "cina-2026";
 
-let _sb = null;
-let _user = null;
-let IS_ADMIN = false;
+let _sb = null;            // supabase client (null until needed)
+let _user = null;          // current user
+let IS_ADMIN = false;      // true only for authorized editors
 let _pushTimer = null;
 let _isPushing = false;
 
@@ -1976,7 +1973,7 @@ function loadSupabaseLib(){
     const s = document.createElement("script");
     s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js";
     s.onload = ()=> resolve(window.supabase);
-    s.onerror = ()=> reject(new Error("Impossibile caricare Supabase"));
+    s.onerror = ()=> reject(new Error("Impossibile caricare la libreria Supabase. Servizio non raggiungibile?"));
     document.head.appendChild(s);
   });
 }
@@ -1991,6 +1988,12 @@ async function ensureSupabase(){
   return _sb;
 }
 
+function canEdit(){ return !!IS_ADMIN; }
+function requireAdmin(action){
+  if(canEdit()) return true;
+  showToast(action ? `Solo amministratori: ${action}` : "Solo gli amministratori possono modificare");
+  return false;
+}
 function setAccountUI(state, label){
   const btn = $("account-btn");
   if(!btn) return;
@@ -2000,46 +2003,36 @@ function setAccountUI(state, label){
   $("account-btn-label").textContent = label;
 }
 
-function requireAdmin(action){
-  if(IS_ADMIN) return true;
-  showToast(action || "Solo gli amministratori possono modificare");
-  return false;
-}
-
-async function checkAdminStatus(){
-  IS_ADMIN = false;
-  if(!_user) return false;
-  try{
-    const sb = await ensureSupabase();
-    const { data, error } = await sb.rpc("is_trip_admin");
-    if(error) throw error;
-    IS_ADMIN = !!data;
-  }catch(e){
-    console.warn("checkAdminStatus:", e);
-    IS_ADMIN = false;
-  }
-  return IS_ADMIN;
-}
-
 async function bootstrapAuth(){
-  if(!isSupabaseConfigured()) return;
-  setAccountUI("syncing","Cloud…");
+  if(!isSupabaseConfigured()){
+    return;
+  }
+  setAccountUI("offline","Sola lettura");
   try{
     const sb = await ensureSupabase();
-    const { data: { session } } = await sb.auth.getSession();
-    _user = session ? session.user : null;
-    await checkAdminStatus();
+    if(!sb) return;
+
+    // Public read: everyone sees the same cloud itinerary, even without login.
     await pullFromCloud();
-    updateAuthUiLabel();
+
+    const { data: { session } } = await sb.auth.getSession();
+    if(session && session.user){
+      _user = session.user;
+      await refreshAdminStatus();
+    }
 
     sb.auth.onAuthStateChange(async (_event, session)=>{
-      _user = session ? session.user : null;
-      await checkAdminStatus();
-      await pullFromCloud();
-      await checkAdminStatus();
-      renderHome();
-      if(currentDay !== null) showDay(currentDay);
-      updateAuthUiLabel();
+      if(session && session.user){
+        _user = session.user;
+        await refreshAdminStatus();
+        await pullFromCloud();
+      }else{
+        _user = null;
+        IS_ADMIN = false;
+        editMode = false;
+        setAccountUI("offline","Sola lettura");
+        if(currentDay) showDay(currentDay);
+      }
     });
   }catch(e){
     console.warn("Supabase non raggiungibile:", e);
@@ -2047,33 +2040,54 @@ async function bootstrapAuth(){
   }
 }
 
-function updateAuthUiLabel(){
-  if(IS_ADMIN) setAccountUI("synced","Admin");
-  else if(_user) setAccountUI("synced","Sola lettura");
-  else setAccountUI("offline","Accedi");
+async function refreshAdminStatus(){
+  IS_ADMIN = false;
+  if(!_user){
+    setAccountUI("offline","Sola lettura");
+    return false;
+  }
+  try{
+    const sb = await ensureSupabase();
+    const email = (_user.email || "").toLowerCase();
+    const { data, error } = await sb
+      .from("app_admins")
+      .select("email")
+      .eq("email", email)
+      .maybeSingle();
+    if(error) throw error;
+    IS_ADMIN = !!data;
+    setAccountUI(IS_ADMIN ? "synced" : "offline", IS_ADMIN ? "Admin" : "Sola lettura");
+    if(currentDay) showDay(currentDay);
+    return IS_ADMIN;
+  }catch(e){
+    console.warn("refreshAdminStatus:", e);
+    IS_ADMIN = false;
+    setAccountUI("offline","Sola lettura");
+    return false;
+  }
 }
 
 window.openAuthSheet = async function(){
-  showSheet(_user ? renderAccountSheet() : renderLoginSheet());
+  const sheetHtml = _user
+    ? renderAccountSheet()
+    : renderLoginSheet();
+  showSheet(sheetHtml);
 };
 
 function renderLoginSheet(){
   return `
     <div class="sheet-handle"></div>
     <div class="sheet-eyebrow">Accesso amministratore</div>
-    <h3 class="sheet-title">Accedi con email e password</h3>
-    <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px">La app resta visibile in sola lettura. Solo gli amministratori autorizzati possono modificare dati, foto, spese, passi e tappe.</p>
-    <div class="form-field">
+    <h3 class="sheet-title">Accedi per modificare</h3>
+    <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px">La app è visibile a tutti in sola lettura. Solo gli amministratori autorizzati possono caricare foto, modificare tappe, spese, passi e stati visitati.</p>
+    <div class="editor-field">
       <label>Email</label>
       <input id="auth-email" type="email" placeholder="tu@esempio.it" autocomplete="email" inputmode="email">
-    </div>
-    <div class="form-field">
-      <label>Password</label>
-      <input id="auth-password" type="password" placeholder="Password" autocomplete="current-password">
+      <div class="editor-hint">Ricevi un link via email. Se la tua email è nella lista amministratori, sblocchi le modifiche.</div>
     </div>
     <div id="auth-status" class="auth-status" style="display:none"></div>
     <div class="editor-actions">
-      <button class="editor-btn primary" onclick="signInWithPassword()">Accedi</button>
+      <button class="editor-btn primary" onclick="sendMagicLink()">Invia link</button>
       <button class="editor-btn" onclick="closeSheet()">Annulla</button>
     </div>
   `;
@@ -2085,46 +2099,39 @@ function renderAccountSheet(){
   return `
     <div class="sheet-handle"></div>
     <div class="sheet-eyebrow">Account</div>
-    <h3 class="sheet-title">${IS_ADMIN ? 'Modalità amministratore' : 'Sola lettura'}</h3>
+    <h3 class="sheet-title">Account amministratore</h3>
     <div class="auth-info">
-      <b>${IS_ADMIN ? 'Puoi modificare la app' : 'Accesso senza permessi di modifica'}</b>
-      <div class="auth-email">${htmlEscape(_user.email || "")}</div>
+      <b>Connesso come</b>
+      <div class="auth-email">${htmlEscape(_user.email || "(senza email)")}</div>
       <div class="auth-meta">Ultima sincronizzazione: ${lastSyncText}</div>
     </div>
-    <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px">${IS_ADMIN ? 'Le modifiche vengono salvate su Supabase.' : 'La tua email non è presente nella tabella app_admins: puoi visualizzare ma non modificare.'}</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px">${IS_ADMIN ? "Sei amministratore: modifiche e foto vengono salvate automaticamente sul cloud." : "Questo account non è nella lista amministratori: puoi consultare la app, ma non modificarla."}</p>
     <div class="editor-actions">
       <button class="editor-btn primary" onclick="manualSync()">Sincronizza ora</button>
-      <button class="editor-btn" onclick="signOut()">Esci</button>
-      <button class="editor-btn" onclick="closeSheet()">Chiudi</button>
+      <button class="editor-btn" onclick="signOut()">Disconnetti</button>
     </div>
   `;
 }
 
-window.signInWithPassword = async function(){
+window.sendMagicLink = async function(){
   const email = ($("auth-email").value || "").trim();
-  const password = ($("auth-password").value || "");
   const status = $("auth-status");
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !password){
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
     status.style.display = "block"; status.className = "auth-status error";
-    status.textContent = "Inserisci email e password";
+    status.textContent = "Email non valida";
     return;
   }
   status.style.display = "block"; status.className = "auth-status";
-  status.textContent = "Accesso in corso…";
+  status.textContent = "Invio in corso…";
   try{
     const sb = await ensureSupabase();
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.href.split("#")[0].split("?")[0] }
+    });
     if(error) throw error;
-    _user = data.user;
-    await checkAdminStatus();
-    await pullFromCloud();
-    await checkAdminStatus();
-    updateAuthUiLabel();
-    closeSheet();
-
-    renderHome();
-    if(currentDay !== null) showDay(currentDay);
-    showToast(IS_ADMIN ? "Accesso admin effettuato" : "Accesso in sola lettura");
+    status.className = "auth-status success";
+    status.innerHTML = `Email inviata a <b>${htmlEscape(email)}</b>. Apri il link che hai ricevuto per accedere — questa scheda si aggiornerà da sola.`;
   }catch(e){
     status.className = "auth-status error";
     status.textContent = "Errore: " + (e.message || e);
@@ -2132,24 +2139,18 @@ window.signInWithPassword = async function(){
 };
 
 window.signOut = async function(){
+  if(!confirm("Disconnetti? I dati restano sul cloud e tornerai a vederli accedendo di nuovo.")) return;
   try{
     const sb = await ensureSupabase();
     await sb.auth.signOut();
-    _user = null;
-    IS_ADMIN = false;
-    editMode = false;
     closeSheet();
-    updateAuthUiLabel();
-    if(currentDay !== null) showDay(currentDay); else renderHome();
     showToast("Disconnesso");
   }catch(e){ showToast("Errore: " + e.message); }
 };
 
 window.manualSync = async function(){
   closeSheet();
-  await pullFromCloud();
-  if(IS_ADMIN) await pushToCloud(true);
-  else showToast("Dati aggiornati dal cloud");
+  await pushToCloud(true);
 };
 
 function collectLocalState(){
@@ -2168,29 +2169,60 @@ function collectLocalState(){
 
 async function pullFromCloud(){
   try{
+    const wasAdmin = canEdit();
+    setAccountUI(wasAdmin ? "syncing" : "offline", wasAdmin ? "Ricevo dati…" : "Sola lettura");
     const sb = await ensureSupabase();
-    if(!sb) return;
     const { data, error } = await sb.from(SUPABASE_TABLE).select("data").eq("id", SUPABASE_RECORD_ID).maybeSingle();
     if(error) throw error;
     if(data && data.data){
       const cloudState = data.data;
+      // Cloud wins on first pull (could add merge logic later)
       if(cloudState.days && Array.isArray(cloudState.days) && cloudState.days.length === DAYS.length){
         DAYS = cloudState.days;
         localStorage.setItem(STATE_KEY, JSON.stringify(DAYS));
       }
-      if(cloudState.photos){ PHOTOS = cloudState.photos; localStorage.setItem(PHOTO_KEY, JSON.stringify(PHOTOS)); }
-      if(cloudState.heros){ HERO_PHOTOS = cloudState.heros; localStorage.setItem(HERO_KEY, JSON.stringify(HERO_PHOTOS)); }
-      if(cloudState.visited){ VISITED = cloudState.visited; localStorage.setItem(VISITED_KEY, JSON.stringify(VISITED)); }
-      if(cloudState.tickets){ TICKETS = cloudState.tickets; localStorage.setItem(TICKETS_KEY, JSON.stringify(TICKETS)); }
-      if(cloudState.expenses){ EXPENSES = cloudState.expenses; localStorage.setItem(EXP_KEY, JSON.stringify(EXPENSES)); }
-      if(cloudState.steps){ STEPS = cloudState.steps; localStorage.setItem(STEPS_KEY, JSON.stringify(STEPS)); }
-      if(cloudState.check){ localStorage.setItem("cina2026.check", JSON.stringify(cloudState.check)); }
-      if(cloudState.tile){ localStorage.setItem(TILE_KEY, cloudState.tile); currentTile = cloudState.tile; }
+      if(cloudState.photos){
+        PHOTOS = cloudState.photos;
+        localStorage.setItem(PHOTO_KEY, JSON.stringify(PHOTOS));
+      }
+      if(cloudState.heros){
+        HERO_PHOTOS = cloudState.heros;
+        localStorage.setItem(HERO_KEY, JSON.stringify(HERO_PHOTOS));
+      }
+      if(cloudState.visited){
+        VISITED = cloudState.visited;
+        localStorage.setItem(VISITED_KEY, JSON.stringify(VISITED));
+      }
+      if(cloudState.tickets){
+        TICKETS = cloudState.tickets;
+        localStorage.setItem(TICKETS_KEY, JSON.stringify(TICKETS));
+      }
+      if(cloudState.expenses){
+        EXPENSES = cloudState.expenses;
+        localStorage.setItem(EXP_KEY, JSON.stringify(EXPENSES));
+      }
+      if(cloudState.steps){
+        STEPS = cloudState.steps;
+        localStorage.setItem(STEPS_KEY, JSON.stringify(STEPS));
+      }
+      if(cloudState.check){
+        localStorage.setItem("cina2026.check", JSON.stringify(cloudState.check));
+      }
+      if(cloudState.tile){
+        localStorage.setItem(TILE_KEY, cloudState.tile);
+        currentTile = cloudState.tile;
+      }
+      // Re-render currently visible view
       renderHome();
       if(currentDay) showDay(currentDay);
       renderPhrases(); renderPractical();
+      showToast("Dati ricevuti dal cloud");
+    }else{
+      // First cloud initialization: only administrators may create the record.
+      if(canEdit()) await pushToCloud(false);
     }
     localStorage.setItem("cina2026.lastSync", String(Date.now()));
+    setAccountUI(canEdit() ? "synced" : "offline", canEdit() ? "Admin" : "Sola lettura");
   }catch(e){
     console.warn("pullFromCloud:", e);
     setAccountUI("offline","Errore sync");
@@ -2198,16 +2230,16 @@ async function pullFromCloud(){
 }
 
 function scheduleCloudPush(){
-  if(!IS_ADMIN) return;
+  if(!canEdit()) return;
   clearTimeout(_pushTimer);
   _pushTimer = setTimeout(()=> pushToCloud(false), 1200);
 }
 
 async function pushToCloud(showFeedback){
-  if(!IS_ADMIN || _isPushing) return;
+  if(!canEdit() || _isPushing) return;
   _isPushing = true;
   try{
-    setAccountUI("syncing","Salvo…");
+    setAccountUI("syncing","Invio…");
     const sb = await ensureSupabase();
     const payload = collectLocalState();
     const { error } = await sb.from(SUPABASE_TABLE).upsert({
@@ -2217,22 +2249,26 @@ async function pushToCloud(showFeedback){
     });
     if(error) throw error;
     localStorage.setItem("cina2026.lastSync", String(Date.now()));
-    updateAuthUiLabel();
+    setAccountUI(canEdit() ? "synced" : "offline", canEdit() ? "Admin" : "Sola lettura");
     if(showFeedback) showToast("Dati salvati sul cloud");
   }catch(e){
     console.warn("pushToCloud:", e);
     setAccountUI("offline","Errore sync");
     if(showFeedback) showToast("Errore: " + (e.message||e));
-  }finally{ _isPushing = false; }
+  }finally{
+    _isPushing = false;
+  }
 }
 
+// Photos: when user is logged in, upload to Storage instead of keeping base64.
 async function uploadPhotoToCloud(base64DataUrl){
-  if(!IS_ADMIN) return null;
+  if(!requireAdmin("caricare foto")) return null;
   try{
     const sb = await ensureSupabase();
+    // Convert data URL → Blob
     const res = await fetch(base64DataUrl);
     const blob = await res.blob();
-    const filename = `trip/${Date.now()}-${crypto.randomUUID()}.jpg`;
+    const filename = `${SUPABASE_RECORD_ID}/${Date.now()}-${crypto.randomUUID()}.jpg`;
     const { error } = await sb.storage.from(SUPABASE_BUCKET).upload(filename, blob, {
       cacheControl: "31536000",
       upsert: false,
@@ -2243,16 +2279,16 @@ async function uploadPhotoToCloud(base64DataUrl){
     return data.publicUrl;
   }catch(e){
     console.warn("uploadPhotoToCloud:", e);
-    showToast("Upload foto non riuscito");
     return null;
   }
 }
 
 async function deletePhotoFromCloud(url){
-  if(!IS_ADMIN || !url || !url.startsWith("http")) return;
+  if(!canEdit() || !url || !url.startsWith("http")) return;
   try{
     const sb = await ensureSupabase();
-    const marker = `/${SUPABASE_BUCKET}/`;
+    // Extract filename from URL
+    const marker = `/object/public/${SUPABASE_BUCKET}/`;
     const idx = url.indexOf(marker);
     if(idx === -1) return;
     const path = decodeURIComponent(url.slice(idx + marker.length).split("?")[0]);
@@ -2419,12 +2455,12 @@ function renderHeroEditor(dayN){
 }
 
 window.handleHeroFile = async function(dayN, input){
-  if(!requireAdmin("Solo gli amministratori possono caricare foto")) return;
+  if(!requireAdmin("caricare foto")) return;
   const file = input.files && input.files[0];
   if(!file) return;
   showToast("Elaborazione foto…");
   let dataUrl = await resizeImage(file);
-  if(_user){
+  if(canEdit()){
     showToast("Carico sul cloud…");
     const url = await uploadPhotoToCloud(dataUrl);
     if(url) dataUrl = url;
@@ -2432,15 +2468,15 @@ window.handleHeroFile = async function(dayN, input){
   HERO_PHOTOS[dayN] = dataUrl;
   persistHeros();
   renderHome();
-  if(currentDay !== null) showDay(dayN);
+  showDay(dayN);
   showToast("Copertina aggiornata");
 };
 
 window.removeHero = function(dayN){
-  if(!requireAdmin("Solo gli amministratori possono eliminare foto")) return;
+  if(!requireAdmin("rimuovere foto")) return;
   if(!confirm("Rimuovere la foto-copertina di questo giorno?")) return;
   const old = HERO_PHOTOS[dayN];
-  if(_user && old && typeof old === "string" && old.startsWith("http")){
+  if(canEdit() && old && typeof old === "string" && old.startsWith("http")){
     deletePhotoFromCloud(old);
   }
   delete HERO_PHOTOS[dayN];
@@ -2452,7 +2488,7 @@ window.removeHero = function(dayN){
 
 // === VISITED TOGGLE ===
 window.toggleVisited = function(dayN, encStopName){
-  if(!requireAdmin("Solo gli amministratori possono marcare i visitati")) return;
+  if(!requireAdmin("marcare visitato")) return;
   const stopName = decodeURIComponent(encStopName);
   const k = visitedKey(dayN, stopName);
   if(VISITED[k]){
@@ -2490,13 +2526,13 @@ window.closeTicket = function(){
 };
 
 window.uploadTicketFor = async function(dayN, encStopName, input){
-  if(!requireAdmin("Solo gli amministratori possono caricare biglietti")) return;
+  if(!requireAdmin("caricare biglietti/foto")) return;
   const stopName = decodeURIComponent(encStopName);
   const file = input.files && input.files[0];
   if(!file) return;
   showToast("Elaborazione…");
   let dataUrl = await resizeImage(file);
-  if(_user){
+  if(canEdit()){
     const url = await uploadPhotoToCloud(dataUrl);
     if(url) dataUrl = url;
   }
@@ -2506,7 +2542,7 @@ window.uploadTicketFor = async function(dayN, encStopName, input){
   showToast("Biglietto salvato");
 };
 window.removeTicketFor = function(dayN, encStopName){
-  if(!requireAdmin("Solo gli amministratori possono eliminare biglietti")) return;
+  if(!requireAdmin("rimuovere biglietti/foto")) return;
   const stopName = decodeURIComponent(encStopName);
   if(!confirm("Rimuovere il biglietto per questa tappa?")) return;
   const k = ticketKey(dayN, stopName);
@@ -2574,7 +2610,7 @@ function renderExpenses(dayN){
         <span class="expense-cat">${cat.icon}</span>
         <span class="expense-note">${htmlEscape(e.note || cat.label)}</span>
         <span class="expense-amount">¥${e.amount.toFixed(0)}</span>
-        ${IS_ADMIN ? `<button class="expense-del" onclick="deleteExpense(${dayN}, ${i})" title="Elimina">×</button>` : ``}
+        ${canEdit()?`<button class="expense-del" onclick="deleteExpense(${dayN}, ${i})" title="Elimina">×</button>`:""}
       </div>`;
   }).join("");
   return `
@@ -2584,11 +2620,11 @@ function renderExpenses(dayN){
         <span class="expenses-total">¥${totalCny.toFixed(0)}<small>· €${totalEur.toFixed(2)}</small></span>
       </div>
       ${list.length ? `<div class="expenses-list">${rows}</div>` : `<div style="font-size:12.5px;color:var(--ink-faint);font-style:italic;padding:6px 0">Ancora nessuna spesa registrata.</div>`}
-      ${IS_ADMIN ? `<button class="add-expense-btn" onclick="openExpenseForm(${dayN})">+ Aggiungi spesa</button>` : ``}
+      ${canEdit()?`<button class="add-expense-btn" onclick="openExpenseForm(${dayN})">+ Aggiungi spesa</button>`:""}
     </div>`;
 }
 window.openExpenseForm = function(dayN){
-  if(!requireAdmin("Solo gli amministratori possono aggiungere spese")) return;
+  if(!requireAdmin("aggiungere spese")) return;
   showSheet(`
     <div class="sheet-handle"></div>
     <div class="sheet-eyebrow">Nuova spesa · Giorno ${dayN}</div>
@@ -2633,7 +2669,7 @@ window.pickCat = function(btn){
   btn.classList.add("active");
 };
 window.saveExpense = function(dayN){
-  if(!requireAdmin("Solo gli amministratori possono salvare spese")) return;
+  if(!requireAdmin("salvare spese")) return;
   const amount = parseFloat($("exp-amount").value) || 0;
   if(amount <= 0){ showToast("Inserisci un importo"); return; }
   const note = ($("exp-note").value || "").trim();
@@ -2646,7 +2682,7 @@ window.saveExpense = function(dayN){
   showDay(dayN);
 };
 window.deleteExpense = function(dayN, idx){
-  if(!requireAdmin("Solo gli amministratori possono eliminare spese")) return;
+  if(!requireAdmin("eliminare spese")) return;
   if(!confirm("Eliminare questa spesa?")) return;
   EXPENSES[dayN].splice(idx, 1);
   if(EXPENSES[dayN].length === 0) delete EXPENSES[dayN];
@@ -2665,11 +2701,11 @@ function renderSteps(dayN){
         <b>${s ? s.toLocaleString("it-IT") : "—"}</b>
         <small>${s ? `passi · ~${km} km` : 'inserisci i passi a fine giornata'}</small>
       </div>
-      ${IS_ADMIN ? `<button class="steps-edit" onclick="editSteps(${dayN})">${s ? 'Modifica' : 'Inserisci'}</button>` : ``}
+      ${canEdit()?`<button class="steps-edit" onclick="editSteps(${dayN})">${s ? 'Modifica' : 'Inserisci'}</button>`:""}
     </div>`;
 }
 window.editSteps = function(dayN){
-  if(!requireAdmin("Solo gli amministratori possono inserire i passi")) return;
+  if(!requireAdmin("inserire i passi")) return;
   const cur = STEPS[dayN] || "";
   const v = prompt("Quanti passi hai fatto oggi?\n(prendi il numero da Google Fit / Salute / Samsung Health)", cur);
   if(v === null) return;
@@ -2983,7 +3019,7 @@ function placePayload(name, zh, py, lat, lng){
 let pendingPhoto = null;  // data URL during form
 
 window.openStopForm = function(dayN, stopIdx){
-  if(!requireAdmin("Solo gli amministratori possono modificare le tappe")) return;
+  if(!requireAdmin("modificare tappe")) return;
   const day = DAYS.find(d=>d.n===dayN);
   const isNew = stopIdx === -1;
   const stop = isNew ? {name:"", zh:"", py:"", desc:"", coords:[null, null], hours:"", duration:"", price:""} : day.stops[stopIdx];
@@ -3081,6 +3117,7 @@ window.openStopForm = function(dayN, stopIdx){
 };
 
 window.handlePhotoFile = async function(input){
+  if(!requireAdmin("caricare foto")) return;
   const file = input.files && input.files[0];
   if(!file) return;
   showToast("Elaborazione foto…");
@@ -3132,7 +3169,7 @@ function resizeImage(file){
 }
 
 window.saveStopForm = async function(dayN, stopIdx){
-  if(!requireAdmin("Solo gli amministratori possono salvare le tappe")) return;
+  if(!requireAdmin("salvare tappe")) return;
   const name = $("f-name").value.trim();
   if(!name){ showToast("Il nome è obbligatorio"); return; }
   const zh = $("f-zh").value.trim();
@@ -3174,7 +3211,7 @@ window.saveStopForm = async function(dayN, stopIdx){
   if(pendingPhoto){
     let photoValue = pendingPhoto;
     // If logged in and photo is a data URL (newly added), upload to Storage and store URL instead
-    if(_user && typeof pendingPhoto === "string" && pendingPhoto.startsWith("data:")){
+    if(canEdit() && typeof pendingPhoto === "string" && pendingPhoto.startsWith("data:")){
       showToast("Carico foto sul cloud…");
       const url = await uploadPhotoToCloud(pendingPhoto);
       if(url){
@@ -3186,7 +3223,7 @@ window.saveStopForm = async function(dayN, stopIdx){
   }else{
     // If we're removing a photo that was on the cloud, clean up
     const old = PHOTOS[pkey];
-    if(_user && old && typeof old === "string" && old.startsWith("http")){
+    if(canEdit() && old && typeof old === "string" && old.startsWith("http")){
       deletePhotoFromCloud(old);
     }
     delete PHOTOS[pkey];
@@ -3211,7 +3248,7 @@ window.saveStopForm = async function(dayN, stopIdx){
 };
 
 window.deleteStopConfirm = function(dayN, stopIdx){
-  if(!requireAdmin("Solo gli amministratori possono eliminare tappe")) return;
+  if(!requireAdmin("eliminare tappe")) return;
   const day = DAYS.find(d=>d.n===dayN);
   const stop = day.stops[stopIdx];
   if(!confirm(`Eliminare "${stop.name}"?`)) return;
@@ -3225,7 +3262,7 @@ window.deleteStopConfirm = function(dayN, stopIdx){
 };
 
 window.moveStop = function(dayN, stopIdx, dir){
-  if(!requireAdmin("Solo gli amministratori possono riordinare tappe")) return;
+  if(!requireAdmin("riordinare tappe")) return;
   const day = DAYS.find(d=>d.n===dayN);
   const ni = stopIdx + dir;
   if(ni < 0 || ni >= day.stops.length) return;
@@ -3235,7 +3272,7 @@ window.moveStop = function(dayN, stopIdx, dir){
 };
 
 window.openMoveToDay = function(fromDayN, stopIdx){
-  if(!requireAdmin("Solo gli amministratori possono spostare tappe")) return;
+  if(!requireAdmin("spostare tappe")) return;
   const fromDay = DAYS.find(d=>d.n===fromDayN);
   const stop = fromDay.stops[stopIdx];
   const html = `
@@ -3266,7 +3303,7 @@ window.openMoveToDay = function(fromDayN, stopIdx){
 };
 
 window.moveStopAcross = function(fromDayN, stopIdx, toDayN){
-  if(!requireAdmin("Solo gli amministratori possono spostare tappe")) return;
+  if(!requireAdmin("spostare tappe")) return;
   if(fromDayN === toDayN) return;
   const fromDay = DAYS.find(d=>d.n===fromDayN);
   const toDay   = DAYS.find(d=>d.n===toDayN);
@@ -3296,7 +3333,7 @@ window.moveStopAcross = function(fromDayN, stopIdx, toDayN){
 };
 
 window.resetDay = function(dayN){
-  if(!requireAdmin("Solo gli amministratori possono ripristinare i dati")) return;
+  if(!requireAdmin("ripristinare tappe")) return;
   if(!confirm(`Ripristinare le tappe originali del Giorno ${dayN}?\n(Le tue modifiche e foto di questo giorno verranno perse.)`)) return;
   const def = DEFAULT_DAYS.find(d=>d.n===dayN);
   const idx = DAYS.findIndex(d=>d.n===dayN);
@@ -3309,7 +3346,7 @@ window.resetDay = function(dayN){
 };
 
 window.resetAll = function(){
-  if(!requireAdmin("Solo gli amministratori possono ripristinare i dati")) return;
+  if(!requireAdmin("ripristinare itinerario")) return;
   if(!confirm("Ripristinare TUTTO l'itinerario originale?\nLe tue modifiche e tutte le foto caricate verranno cancellate.")) return;
   DAYS = JSON.parse(JSON.stringify(DEFAULT_DAYS));
   PHOTOS = {};
@@ -3321,7 +3358,7 @@ window.resetAll = function(){
 };
 
 window.toggleEditMode = function(){
-  if(!requireAdmin("Solo gli amministratori possono aprire la modalità modifica")) return;
+  if(!requireAdmin("aprire la modalità modifica")) return;
   editMode = !editMode;
   if(currentDay !== null) showDay(currentDay);
 };
@@ -3607,7 +3644,6 @@ function renderHome(){
           <div class="day-hero-num">${d.n}<small>giorno</small></div>
           ${isToday?'<span class="day-hero-today">oggi</span>':''}
         </div>
-        ${IS_ADMIN ? `<div class="day-card-photo-admin" onclick="event.stopPropagation()">${renderHeroEditor(d.n)}</div>` : ''}
         <div class="day-info">
           <div class="day-info-text">
             <div class="day-date">${htmlEscape(d.dayLabel)}</div>
@@ -3625,7 +3661,6 @@ window.showDay = function(n){
   const d = DAYS.find(x=>x.n===n);
   if(!d) return;
   currentDay = n;
-  if(!IS_ADMIN) editMode = false;
   const html = `
     <div class="detail-hero" data-num="${d.n}">
       <div class="detail-eyebrow">Giorno ${d.n} · ${htmlEscape(d.city)} · <span class="zh">${htmlEscape(d.cityZh)}</span></div>
@@ -3637,7 +3672,8 @@ window.showDay = function(n){
 
     ${renderMap(d.stops)}
 
-    ${IS_ADMIN ? `<div class="edit-toolbar">
+    ${canEdit()?`
+    <div class="edit-toolbar">
       <span class="edit-label">${editMode ? '✎ Modalità modifica attiva' : 'Accesso amministratore'}</span>
       <div style="display:flex;gap:6px">
         ${editMode?`<button class="btn btn-ghost" onclick="resetDay(${n})">Ripristina</button>`:''}
@@ -3645,13 +3681,13 @@ window.showDay = function(n){
           ${editMode ? 'Fine' : 'Modifica'}
         </button>
       </div>
-    </div>` : ''}
+    </div>`:''}
 
-    ${(IS_ADMIN && editMode) ? renderHeroEditor(n) : ''}
+    ${canEdit() && editMode ? renderHeroEditor(n) : ''}
 
     <div class="stops">
       ${d.stops.map((s,i)=>renderStop(s, i+1, n, i, d.stops.length)).join("")}
-      ${(IS_ADMIN && editMode) ? `
+      ${canEdit() && editMode ? `
         <button class="add-stop-btn" onclick="openStopForm(${n}, -1)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Aggiungi una tappa al Giorno ${n}
@@ -3690,7 +3726,7 @@ function renderStop(s, n, dayN, stopIdx, total){
   const photoHtml = photoUrl ? `
     <div class="stop-photo">
       <img src="${photoUrl}" alt="${attrEscape(s.name)}">
-      ${(IS_ADMIN && editMode)?`<button class="stop-photo-remove" onclick="event.stopPropagation(); openStopForm(${dayN}, ${stopIdx})" title="Modifica/rimuovi foto">✎</button>`:''}
+      ${canEdit() && editMode?`<button class="stop-photo-remove" onclick="event.stopPropagation(); openStopForm(${dayN}, ${stopIdx})" title="Modifica/rimuovi foto">✎</button>`:''}
     </div>` : '';
 
   const stamp = isVisited ? `<div class="visited-stamp">印</div>` : '';
@@ -3702,7 +3738,7 @@ function renderStop(s, n, dayN, stopIdx, total){
   if(s.price)    badges.push(`<span class="stop-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg><b>Prezzo</b> ${htmlEscape(s.price)}</span>`);
   const badgesHtml = badges.length ? `<div class="stop-badges">${badges.join("")}</div>` : "";
 
-  const editRow = (IS_ADMIN && editMode) ? `
+  const editRow = canEdit() && editMode ? `
     <div class="stop-edit-row">
       <button class="icon-btn" onclick="moveStop(${dayN}, ${stopIdx}, -1)" ${stopIdx===0?'disabled':''} title="Sposta su">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
@@ -3740,18 +3776,15 @@ function renderStop(s, n, dayN, stopIdx, total){
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
             Copia 中文
           </button>`:""}
-          ${IS_ADMIN ? `<button class="visited-toggle ${isVisited?'is-visited':''}" onclick="toggleVisited(${dayN}, '${jsEnc(s.name)}')">
+          ${canEdit()?`<button class="visited-toggle ${isVisited?'is-visited':''}" onclick="toggleVisited(${dayN}, '${jsEnc(s.name)}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="20 6 9 17 4 12"/></svg>
             ${isVisited?'Visitato':'Marca visitato'}
-          </button>` : (isVisited ? `<span class="visited-toggle is-visited" style="pointer-events:none">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="20 6 9 17 4 12"/></svg>
-            Visitato
-          </span>` : ``)}
+          </button>`:""}
           ${ticketUrl?`<button class="btn btn-ticket" onclick="showTicket('${jsEnc(ticketKey(dayN, s.name))}','${jsEnc(s.name)}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v2a2 2 0 100 4v2a3 3 0 01-3 3H5a3 3 0 01-3-3v-2a2 2 0 100-4V9z"/><line x1="13" y1="5" x2="13" y2="19" stroke-dasharray="2 2"/></svg>
             Biglietto
           </button>`:""}
-          ${(IS_ADMIN && editMode)?`<button class="btn btn-gold" onclick="openStopForm(${dayN}, ${stopIdx})">
+          ${canEdit() && editMode?`<button class="btn btn-gold" onclick="openStopForm(${dayN}, ${stopIdx})">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-7 7"/></svg>
             Modifica
           </button>`:""}
