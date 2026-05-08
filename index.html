@@ -833,6 +833,11 @@ section.active{display:block;animation:fade .35s ease}
   width:100%;
 }
 .day-hero-edit input{display:none}
+.day-card-photo-admin{padding:10px 14px 0;background:#fff}
+.day-card-photo-admin .day-hero-edit{margin:0;font-size:12px;padding:8px 10px}
+.day-card-photo-admin .day-hero-edit.has-photo{height:54px}
+.day-card-photo-admin .day-hero-edit.has-photo .photo-actions{bottom:6px;right:6px}
+.day-card-photo-admin .day-hero-edit.has-photo .photo-actions button{padding:5px 8px;font-size:10.5px}
 .day-hero-edit.has-photo{padding:0;border:1px solid rgba(163,123,42,.3);height:160px;position:relative;overflow:hidden}
 .day-hero-edit.has-photo .photo-preview{
   position:absolute;inset:0;background-size:cover;background-position:center;
@@ -2422,7 +2427,7 @@ window.handleHeroFile = async function(dayN, input){
   HERO_PHOTOS[dayN] = dataUrl;
   persistHeros();
   renderHome();
-  showDay(dayN);
+  if(currentDay !== null) showDay(dayN);
   showToast("Copertina aggiornata");
 };
 
@@ -3597,6 +3602,7 @@ function renderHome(){
           <div class="day-hero-num">${d.n}<small>giorno</small></div>
           ${isToday?'<span class="day-hero-today">oggi</span>':''}
         </div>
+        ${IS_ADMIN ? `<div class="day-card-photo-admin" onclick="event.stopPropagation()">${renderHeroEditor(d.n)}</div>` : ''}
         <div class="day-info">
           <div class="day-info-text">
             <div class="day-date">${htmlEscape(d.dayLabel)}</div>
