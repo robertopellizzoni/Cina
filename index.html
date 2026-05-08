@@ -1323,6 +1323,32 @@ section.active{display:block;animation:fade .35s ease}
 }
 .day-phrase-copy:active{background:rgba(163,123,42,.1)}
 
+
+/* === HOME DAY PHOTO BUTTON === */
+.day-card{position:relative}
+.day-photo-btn{
+  position:absolute;right:12px;top:12px;z-index:3;
+  display:inline-flex;align-items:center;gap:5px;
+  border:1px solid rgba(255,255,255,.55);
+  background:rgba(26,23,20,.48);color:#fff;
+  border-radius:16px;padding:6px 9px;
+  font-family:inherit;font-size:10.5px;font-weight:700;
+  letter-spacing:.04em;cursor:pointer;backdrop-filter:blur(6px);
+}
+.day-photo-btn:active{background:rgba(26,23,20,.7)}
+.day-photo-btn input{display:none}
+.stop-practical-panel{
+  display:grid;gap:7px;margin:9px 0 10px;
+  background:linear-gradient(180deg, var(--paper-warm), rgba(237,228,208,.55));
+  border:1px solid rgba(163,123,42,.18);border-radius:10px;padding:10px 11px;
+}
+.stop-practical-row{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--ink-soft);line-height:1.35}
+.stop-practical-row b{color:var(--ink);font-weight:700;min-width:62px}
+.position-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0 14px}
+.position-pick{padding:11px 6px;border-radius:10px;border:1px solid rgba(26,23,20,.12);background:#fff;color:var(--ink);font-family:inherit;font-weight:700;cursor:pointer}
+.position-pick.current{background:var(--red);border-color:var(--red);color:var(--paper)}
+.position-pick:disabled{opacity:.55;cursor:not-allowed}
+
 /* === DAY PICKER (move stop to another day) === */
 .day-picker{display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;margin-bottom:14px;padding-right:4px}
 .day-pick{
@@ -2426,6 +2452,24 @@ window.handleHeroFile = async function(dayN, input){
   showToast("Copertina aggiornata");
 };
 
+
+
+window.handleHomeHeroFile = async function(dayN, input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  showToast("Elaborazione foto…");
+  let dataUrl = await resizeImage(file);
+  if(_user){
+    showToast("Carico sul cloud…");
+    const url = await uploadPhotoToCloud(dataUrl);
+    if(url) dataUrl = url;
+  }
+  HERO_PHOTOS[dayN] = dataUrl;
+  persistHeros();
+  renderHome();
+  showToast(`Foto associata al Giorno ${dayN}`);
+};
+
 window.removeHero = function(dayN){
   if(!confirm("Rimuovere la foto-copertina di questo giorno?")) return;
   const old = HERO_PHOTOS[dayN];
@@ -2437,6 +2481,11 @@ window.removeHero = function(dayN){
   renderHome();
   showDay(dayN);
   showToast("Copertina rimossa");
+};
+
+window.openHomeHeroPicker = function(dayN){
+  const input = document.getElementById(`home-hero-file-${dayN}`);
+  if(input) input.click();
 };
 
 // === VISITED TOGGLE ===
@@ -3212,6 +3261,37 @@ window.moveStop = function(dayN, stopIdx, dir){
   showDay(dayN);
 };
 
+
+window.openReorderStop = function(dayN, stopIdx){
+  const day = DAYS.find(d=>d.n===dayN);
+  if(!day || !day.stops || day.stops.length < 2) return;
+  const stop = day.stops[stopIdx];
+  const html = `
+    <div class="sheet-handle"></div>
+    <div class="sheet-eyebrow">Ordina tappe · Giorno ${dayN}</div>
+    <h3 class="sheet-title">${htmlEscape(stop.name)}</h3>
+    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 12px;line-height:1.5">Scegli la nuova posizione della tappa nella giornata.</p>
+    <div class="position-grid">
+      ${day.stops.map((_,i)=>`
+        <button class="position-pick ${i===stopIdx?'current':''}" ${i===stopIdx?'disabled':''} onclick="moveStopToPosition(${dayN}, ${stopIdx}, ${i})">${i+1}</button>
+      `).join("")}
+    </div>
+    <button class="sheet-close" onclick="closeSheet()">Annulla</button>
+  `;
+  showSheet(html);
+};
+
+window.moveStopToPosition = function(dayN, fromIdx, toIdx){
+  const day = DAYS.find(d=>d.n===dayN);
+  if(!day || fromIdx === toIdx || fromIdx < 0 || toIdx < 0 || fromIdx >= day.stops.length || toIdx >= day.stops.length) return;
+  const [moved] = day.stops.splice(fromIdx, 1);
+  day.stops.splice(toIdx, 0, moved);
+  persistDays();
+  closeSheet();
+  showDay(dayN);
+  showToast(`Tappa spostata in posizione ${toIdx + 1}`);
+};
+
 window.openMoveToDay = function(fromDayN, stopIdx){
   const fromDay = DAYS.find(d=>d.n===fromDayN);
   const stop = fromDay.stops[stopIdx];
@@ -3575,6 +3655,10 @@ function renderHome(){
     const heroCls = "day-hero " + cc + (hero ? " has-photo" : "");
     return `
       <div class="${cls}" onclick="showDay(${d.n})">
+        <button class="day-photo-btn" onclick="event.stopPropagation(); openHomeHeroPicker(${d.n})" title="${hero?'Cambia foto del giorno':'Carica foto del giorno'}">
+          ${hero?'Cambia foto':'Carica foto'}
+        </button>
+        <input type="file" id="home-hero-file-${d.n}" accept="image/*" style="display:none" onclick="event.stopPropagation()" onchange="event.stopPropagation(); handleHomeHeroFile(${d.n}, this)">
         <div class="${heroCls}" style="${heroStyle}">
           <span class="day-hero-watermark zh">${cityChar(d)}</span>
           <div class="day-hero-num">${d.n}<small>giorno</small></div>
@@ -3672,6 +3756,11 @@ function renderStop(s, n, dayN, stopIdx, total){
   if(s.duration) badges.push(`<span class="stop-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg><b>Durata</b> ${htmlEscape(s.duration)}</span>`);
   if(s.price)    badges.push(`<span class="stop-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg><b>Prezzo</b> ${htmlEscape(s.price)}</span>`);
   const badgesHtml = badges.length ? `<div class="stop-badges">${badges.join("")}</div>` : "";
+  const practicalRows = [];
+  if(s.hours) practicalRows.push(`<div class="stop-practical-row"><b>Orari</b><span>${htmlEscape(s.hours)}</span></div>`);
+  if(s.duration) practicalRows.push(`<div class="stop-practical-row"><b>Durata</b><span>${htmlEscape(s.duration)}</span></div>`);
+  if(s.price) practicalRows.push(`<div class="stop-practical-row"><b>Biglietto</b><span>${htmlEscape(s.price)}</span></div>`);
+  const practicalHtml = practicalRows.length ? `<div class="stop-practical-panel">${practicalRows.join("")}</div>` : "";
 
   const editRow = editMode ? `
     <div class="stop-edit-row">
@@ -3680,6 +3769,9 @@ function renderStop(s, n, dayN, stopIdx, total){
       </button>
       <button class="icon-btn" onclick="moveStop(${dayN}, ${stopIdx}, 1)" ${stopIdx===total-1?'disabled':''} title="Sposta giù">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="icon-btn" onclick="openReorderStop(${dayN}, ${stopIdx})" title="Sposta in una posizione precisa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
       </button>
       <button class="icon-btn" onclick="openMoveToDay(${dayN}, ${stopIdx})" title="Sposta ad altro giorno">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="5" width="12" height="14" rx="2"/><line x1="13" y1="3" x2="13" y2="7"/><line x1="17" y1="3" x2="17" y2="7"/><path d="M3 12h6m0 0l-3-3m3 3l-3 3"/></svg>
@@ -3701,6 +3793,7 @@ function renderStop(s, n, dayN, stopIdx, total){
         <h3 class="stop-name">${htmlEscape(s.name)}</h3>
         ${s.zh?`<div class="stop-zh zh">${htmlEscape(s.zh)}${s.py?`<span class="pinyin">${htmlEscape(s.py)}</span>`:""}</div>`:""}
         ${badgesHtml}
+        ${practicalHtml}
         ${s.desc?`<p class="stop-desc">${htmlEscape(s.desc)}</p>`:""}
         <div class="stop-actions">
           ${hasCoords?`<button class="btn" onclick="openPlace('${payload}')">
