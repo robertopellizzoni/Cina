@@ -2036,7 +2036,9 @@ async function bootstrapAuth(){
       _user = session ? session.user : null;
       await checkAdminStatus();
       await pullFromCloud();
-      if(currentDay !== null) showDay(currentDay); else renderHome();
+      await checkAdminStatus();
+      renderHome();
+      if(currentDay !== null) showDay(currentDay);
       updateAuthUiLabel();
     });
   }catch(e){
@@ -2116,9 +2118,12 @@ window.signInWithPassword = async function(){
     _user = data.user;
     await checkAdminStatus();
     await pullFromCloud();
+    await checkAdminStatus();
     updateAuthUiLabel();
     closeSheet();
-    if(currentDay !== null) showDay(currentDay); else renderHome();
+
+    renderHome();
+    if(currentDay !== null) showDay(currentDay);
     showToast(IS_ADMIN ? "Accesso admin effettuato" : "Accesso in sola lettura");
   }catch(e){
     status.className = "auth-status error";
