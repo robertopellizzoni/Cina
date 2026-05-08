@@ -1323,32 +1323,6 @@ section.active{display:block;animation:fade .35s ease}
 }
 .day-phrase-copy:active{background:rgba(163,123,42,.1)}
 
-
-/* === HOME DAY PHOTO BUTTON === */
-.day-card{position:relative}
-.day-photo-btn{
-  position:absolute;right:12px;top:12px;z-index:3;
-  display:inline-flex;align-items:center;gap:5px;
-  border:1px solid rgba(255,255,255,.55);
-  background:rgba(26,23,20,.48);color:#fff;
-  border-radius:16px;padding:6px 9px;
-  font-family:inherit;font-size:10.5px;font-weight:700;
-  letter-spacing:.04em;cursor:pointer;backdrop-filter:blur(6px);
-}
-.day-photo-btn:active{background:rgba(26,23,20,.7)}
-.day-photo-btn input{display:none}
-.stop-practical-panel{
-  display:grid;gap:7px;margin:9px 0 10px;
-  background:linear-gradient(180deg, var(--paper-warm), rgba(237,228,208,.55));
-  border:1px solid rgba(163,123,42,.18);border-radius:10px;padding:10px 11px;
-}
-.stop-practical-row{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--ink-soft);line-height:1.35}
-.stop-practical-row b{color:var(--ink);font-weight:700;min-width:62px}
-.position-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0 14px}
-.position-pick{padding:11px 6px;border-radius:10px;border:1px solid rgba(26,23,20,.12);background:#fff;color:var(--ink);font-family:inherit;font-weight:700;cursor:pointer}
-.position-pick.current{background:var(--red);border-color:var(--red);color:var(--paper)}
-.position-pick:disabled{opacity:.55;cursor:not-allowed}
-
 /* === DAY PICKER (move stop to another day) === */
 .day-picker{display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;margin-bottom:14px;padding-right:4px}
 .day-pick{
@@ -1985,6 +1959,7 @@ const SUPABASE_RECORD_ID = "cina-2026";
 
 let _sb = null;            // supabase client (null until needed)
 let _user = null;          // current user
+let IS_ADMIN = false;      // true only for authorized editors
 let _pushTimer = null;
 let _isPushing = false;
 
@@ -2013,6 +1988,12 @@ async function ensureSupabase(){
   return _sb;
 }
 
+function canEdit(){ return !!IS_ADMIN; }
+function requireAdmin(action){
+  if(canEdit()) return true;
+  showToast(action ? `Solo amministratori: ${action}` : "Solo gli amministratori possono modificare");
+  return false;
+}
 function setAccountUI(state, label){
   const btn = $("account-btn");
   if(!btn) return;
@@ -2026,16 +2007,63 @@ async function bootstrapAuth(){
   if(!isSupabaseConfigured()){
     return;
   }
-  setAccountUI("syncing","Cloud…");
+  setAccountUI("offline","Sola lettura");
   try{
-    await ensureSupabase();
-    // Versione senza login: usa un unico record Supabase condiviso dalla tua app GitHub Pages.
-    _user = { id: SUPABASE_RECORD_ID, email: "cloud Supabase" };
-    setAccountUI("synced","Cloud attivo");
+    const sb = await ensureSupabase();
+    if(!sb) return;
+
+    // Public read: everyone sees the same cloud itinerary, even without login.
     await pullFromCloud();
+
+    const { data: { session } } = await sb.auth.getSession();
+    if(session && session.user){
+      _user = session.user;
+      await refreshAdminStatus();
+    }
+
+    sb.auth.onAuthStateChange(async (_event, session)=>{
+      if(session && session.user){
+        _user = session.user;
+        await refreshAdminStatus();
+        await pullFromCloud();
+      }else{
+        _user = null;
+        IS_ADMIN = false;
+        editMode = false;
+        setAccountUI("offline","Sola lettura");
+        if(currentDay) showDay(currentDay);
+      }
+    });
   }catch(e){
     console.warn("Supabase non raggiungibile:", e);
     setAccountUI("offline","Solo locale");
+  }
+}
+
+async function refreshAdminStatus(){
+  IS_ADMIN = false;
+  if(!_user){
+    setAccountUI("offline","Sola lettura");
+    return false;
+  }
+  try{
+    const sb = await ensureSupabase();
+    const email = (_user.email || "").toLowerCase();
+    const { data, error } = await sb
+      .from("app_admins")
+      .select("email")
+      .eq("email", email)
+      .maybeSingle();
+    if(error) throw error;
+    IS_ADMIN = !!data;
+    setAccountUI(IS_ADMIN ? "synced" : "offline", IS_ADMIN ? "Admin" : "Sola lettura");
+    if(currentDay) showDay(currentDay);
+    return IS_ADMIN;
+  }catch(e){
+    console.warn("refreshAdminStatus:", e);
+    IS_ADMIN = false;
+    setAccountUI("offline","Sola lettura");
+    return false;
   }
 }
 
@@ -2049,13 +2077,13 @@ window.openAuthSheet = async function(){
 function renderLoginSheet(){
   return `
     <div class="sheet-handle"></div>
-    <div class="sheet-eyebrow">Accedi per sincronizzare</div>
-    <h3 class="sheet-title">Sincronizza tra dispositivi</h3>
-    <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px">Le tue modifiche e foto vengono salvate sul cloud e ritrovate da qualsiasi telefono o computer su cui apri questo link.</p>
+    <div class="sheet-eyebrow">Accesso amministratore</div>
+    <h3 class="sheet-title">Accedi per modificare</h3>
+    <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px">La app è visibile a tutti in sola lettura. Solo gli amministratori autorizzati possono caricare foto, modificare tappe, spese, passi e stati visitati.</p>
     <div class="editor-field">
       <label>Email</label>
       <input id="auth-email" type="email" placeholder="tu@esempio.it" autocomplete="email" inputmode="email">
-      <div class="editor-hint">Ricevi un link via email — niente password da ricordare</div>
+      <div class="editor-hint">Ricevi un link via email. Se la tua email è nella lista amministratori, sblocchi le modifiche.</div>
     </div>
     <div id="auth-status" class="auth-status" style="display:none"></div>
     <div class="editor-actions">
@@ -2070,17 +2098,17 @@ function renderAccountSheet(){
   const lastSyncText = lastSync ? new Date(parseInt(lastSync)).toLocaleString("it-IT") : "mai";
   return `
     <div class="sheet-handle"></div>
-    <div class="sheet-eyebrow">Cloud Supabase</div>
-    <h3 class="sheet-title">Sincronizzazione attiva</h3>
+    <div class="sheet-eyebrow">Account</div>
+    <h3 class="sheet-title">Account amministratore</h3>
     <div class="auth-info">
-      <b>Collegato al progetto Supabase</b>
-      <div class="auth-email">${htmlEscape(SUPABASE_URL)}</div>
+      <b>Connesso come</b>
+      <div class="auth-email">${htmlEscape(_user.email || "(senza email)")}</div>
       <div class="auth-meta">Ultima sincronizzazione: ${lastSyncText}</div>
     </div>
-    <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px">Le modifiche vengono salvate nella tabella <b>${htmlEscape(SUPABASE_TABLE)}</b> e le foto nel bucket <b>${htmlEscape(SUPABASE_BUCKET)}</b>. Aprendo lo stesso link GitHub da un altro dispositivo ritroverai gli stessi dati.</p>
+    <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px">${IS_ADMIN ? "Sei amministratore: modifiche e foto vengono salvate automaticamente sul cloud." : "Questo account non è nella lista amministratori: puoi consultare la app, ma non modificarla."}</p>
     <div class="editor-actions">
       <button class="editor-btn primary" onclick="manualSync()">Sincronizza ora</button>
-      <button class="editor-btn" onclick="closeSheet()">Chiudi</button>
+      <button class="editor-btn" onclick="signOut()">Disconnetti</button>
     </div>
   `;
 }
@@ -2140,9 +2168,9 @@ function collectLocalState(){
 }
 
 async function pullFromCloud(){
-  if(!_user) return;
   try{
-    setAccountUI("syncing","Ricevo dati…");
+    const wasAdmin = canEdit();
+    setAccountUI(wasAdmin ? "syncing" : "offline", wasAdmin ? "Ricevo dati…" : "Sola lettura");
     const sb = await ensureSupabase();
     const { data, error } = await sb.from(SUPABASE_TABLE).select("data").eq("id", SUPABASE_RECORD_ID).maybeSingle();
     if(error) throw error;
@@ -2190,11 +2218,11 @@ async function pullFromCloud(){
       renderPhrases(); renderPractical();
       showToast("Dati ricevuti dal cloud");
     }else{
-      // First time on this account — push local state up
-      await pushToCloud(false);
+      // First cloud initialization: only administrators may create the record.
+      if(canEdit()) await pushToCloud(false);
     }
     localStorage.setItem("cina2026.lastSync", String(Date.now()));
-    setAccountUI("synced","Sincronizzato");
+    setAccountUI(canEdit() ? "synced" : "offline", canEdit() ? "Admin" : "Sola lettura");
   }catch(e){
     console.warn("pullFromCloud:", e);
     setAccountUI("offline","Errore sync");
@@ -2202,13 +2230,13 @@ async function pullFromCloud(){
 }
 
 function scheduleCloudPush(){
-  if(!_user) return;
+  if(!canEdit()) return;
   clearTimeout(_pushTimer);
   _pushTimer = setTimeout(()=> pushToCloud(false), 1200);
 }
 
 async function pushToCloud(showFeedback){
-  if(!_user || _isPushing) return;
+  if(!canEdit() || _isPushing) return;
   _isPushing = true;
   try{
     setAccountUI("syncing","Invio…");
@@ -2221,7 +2249,7 @@ async function pushToCloud(showFeedback){
     });
     if(error) throw error;
     localStorage.setItem("cina2026.lastSync", String(Date.now()));
-    setAccountUI("synced","Sincronizzato");
+    setAccountUI(canEdit() ? "synced" : "offline", canEdit() ? "Admin" : "Sola lettura");
     if(showFeedback) showToast("Dati salvati sul cloud");
   }catch(e){
     console.warn("pushToCloud:", e);
@@ -2234,13 +2262,13 @@ async function pushToCloud(showFeedback){
 
 // Photos: when user is logged in, upload to Storage instead of keeping base64.
 async function uploadPhotoToCloud(base64DataUrl){
-  if(!_user) return null;
+  if(!requireAdmin("caricare foto")) return null;
   try{
     const sb = await ensureSupabase();
     // Convert data URL → Blob
     const res = await fetch(base64DataUrl);
     const blob = await res.blob();
-    const filename = `${SUPABASE_RECORD_ID}/${crypto.randomUUID()}.jpg`;
+    const filename = `${SUPABASE_RECORD_ID}/${Date.now()}-${crypto.randomUUID()}.jpg`;
     const { error } = await sb.storage.from(SUPABASE_BUCKET).upload(filename, blob, {
       cacheControl: "31536000",
       upsert: false,
@@ -2256,15 +2284,14 @@ async function uploadPhotoToCloud(base64DataUrl){
 }
 
 async function deletePhotoFromCloud(url){
-  if(!_user || !url || !url.startsWith("http")) return;
+  if(!canEdit() || !url || !url.startsWith("http")) return;
   try{
     const sb = await ensureSupabase();
-    // Extract path after the bucket name from a public Supabase Storage URL
+    // Extract filename from URL
     const marker = `/object/public/${SUPABASE_BUCKET}/`;
     const idx = url.indexOf(marker);
     if(idx === -1) return;
-    const path = decodeURIComponent(url.slice(idx + marker.length));
-    if(!path) return;
+    const path = decodeURIComponent(url.slice(idx + marker.length).split("?")[0]);
     await sb.storage.from(SUPABASE_BUCKET).remove([path]);
   }catch(e){ console.warn("deletePhotoFromCloud:", e); }
 }
@@ -2428,11 +2455,12 @@ function renderHeroEditor(dayN){
 }
 
 window.handleHeroFile = async function(dayN, input){
+  if(!requireAdmin("caricare foto")) return;
   const file = input.files && input.files[0];
   if(!file) return;
   showToast("Elaborazione foto…");
   let dataUrl = await resizeImage(file);
-  if(_user){
+  if(canEdit()){
     showToast("Carico sul cloud…");
     const url = await uploadPhotoToCloud(dataUrl);
     if(url) dataUrl = url;
@@ -2444,28 +2472,11 @@ window.handleHeroFile = async function(dayN, input){
   showToast("Copertina aggiornata");
 };
 
-
-
-window.handleHomeHeroFile = async function(dayN, input){
-  const file = input.files && input.files[0];
-  if(!file) return;
-  showToast("Elaborazione foto…");
-  let dataUrl = await resizeImage(file);
-  if(_user){
-    showToast("Carico sul cloud…");
-    const url = await uploadPhotoToCloud(dataUrl);
-    if(url) dataUrl = url;
-  }
-  HERO_PHOTOS[dayN] = dataUrl;
-  persistHeros();
-  renderHome();
-  showToast(`Foto associata al Giorno ${dayN}`);
-};
-
 window.removeHero = function(dayN){
+  if(!requireAdmin("rimuovere foto")) return;
   if(!confirm("Rimuovere la foto-copertina di questo giorno?")) return;
   const old = HERO_PHOTOS[dayN];
-  if(_user && old && typeof old === "string" && old.startsWith("http")){
+  if(canEdit() && old && typeof old === "string" && old.startsWith("http")){
     deletePhotoFromCloud(old);
   }
   delete HERO_PHOTOS[dayN];
@@ -2475,13 +2486,9 @@ window.removeHero = function(dayN){
   showToast("Copertina rimossa");
 };
 
-window.openHomeHeroPicker = function(dayN){
-  const input = document.getElementById(`home-hero-file-${dayN}`);
-  if(input) input.click();
-};
-
 // === VISITED TOGGLE ===
 window.toggleVisited = function(dayN, encStopName){
+  if(!requireAdmin("marcare visitato")) return;
   const stopName = decodeURIComponent(encStopName);
   const k = visitedKey(dayN, stopName);
   if(VISITED[k]){
@@ -2519,12 +2526,13 @@ window.closeTicket = function(){
 };
 
 window.uploadTicketFor = async function(dayN, encStopName, input){
+  if(!requireAdmin("caricare biglietti/foto")) return;
   const stopName = decodeURIComponent(encStopName);
   const file = input.files && input.files[0];
   if(!file) return;
   showToast("Elaborazione…");
   let dataUrl = await resizeImage(file);
-  if(_user){
+  if(canEdit()){
     const url = await uploadPhotoToCloud(dataUrl);
     if(url) dataUrl = url;
   }
@@ -2534,6 +2542,7 @@ window.uploadTicketFor = async function(dayN, encStopName, input){
   showToast("Biglietto salvato");
 };
 window.removeTicketFor = function(dayN, encStopName){
+  if(!requireAdmin("rimuovere biglietti/foto")) return;
   const stopName = decodeURIComponent(encStopName);
   if(!confirm("Rimuovere il biglietto per questa tappa?")) return;
   const k = ticketKey(dayN, stopName);
@@ -2601,7 +2610,7 @@ function renderExpenses(dayN){
         <span class="expense-cat">${cat.icon}</span>
         <span class="expense-note">${htmlEscape(e.note || cat.label)}</span>
         <span class="expense-amount">¥${e.amount.toFixed(0)}</span>
-        <button class="expense-del" onclick="deleteExpense(${dayN}, ${i})" title="Elimina">×</button>
+        ${canEdit()?`<button class="expense-del" onclick="deleteExpense(${dayN}, ${i})" title="Elimina">×</button>`:""}
       </div>`;
   }).join("");
   return `
@@ -2611,10 +2620,11 @@ function renderExpenses(dayN){
         <span class="expenses-total">¥${totalCny.toFixed(0)}<small>· €${totalEur.toFixed(2)}</small></span>
       </div>
       ${list.length ? `<div class="expenses-list">${rows}</div>` : `<div style="font-size:12.5px;color:var(--ink-faint);font-style:italic;padding:6px 0">Ancora nessuna spesa registrata.</div>`}
-      <button class="add-expense-btn" onclick="openExpenseForm(${dayN})">+ Aggiungi spesa</button>
+      ${canEdit()?`<button class="add-expense-btn" onclick="openExpenseForm(${dayN})">+ Aggiungi spesa</button>`:""}
     </div>`;
 }
 window.openExpenseForm = function(dayN){
+  if(!requireAdmin("aggiungere spese")) return;
   showSheet(`
     <div class="sheet-handle"></div>
     <div class="sheet-eyebrow">Nuova spesa · Giorno ${dayN}</div>
@@ -2659,6 +2669,7 @@ window.pickCat = function(btn){
   btn.classList.add("active");
 };
 window.saveExpense = function(dayN){
+  if(!requireAdmin("salvare spese")) return;
   const amount = parseFloat($("exp-amount").value) || 0;
   if(amount <= 0){ showToast("Inserisci un importo"); return; }
   const note = ($("exp-note").value || "").trim();
@@ -2671,6 +2682,7 @@ window.saveExpense = function(dayN){
   showDay(dayN);
 };
 window.deleteExpense = function(dayN, idx){
+  if(!requireAdmin("eliminare spese")) return;
   if(!confirm("Eliminare questa spesa?")) return;
   EXPENSES[dayN].splice(idx, 1);
   if(EXPENSES[dayN].length === 0) delete EXPENSES[dayN];
@@ -2689,10 +2701,11 @@ function renderSteps(dayN){
         <b>${s ? s.toLocaleString("it-IT") : "—"}</b>
         <small>${s ? `passi · ~${km} km` : 'inserisci i passi a fine giornata'}</small>
       </div>
-      <button class="steps-edit" onclick="editSteps(${dayN})">${s ? 'Modifica' : 'Inserisci'}</button>
+      ${canEdit()?`<button class="steps-edit" onclick="editSteps(${dayN})">${s ? 'Modifica' : 'Inserisci'}</button>`:""}
     </div>`;
 }
 window.editSteps = function(dayN){
+  if(!requireAdmin("inserire i passi")) return;
   const cur = STEPS[dayN] || "";
   const v = prompt("Quanti passi hai fatto oggi?\n(prendi il numero da Google Fit / Salute / Samsung Health)", cur);
   if(v === null) return;
@@ -3006,6 +3019,7 @@ function placePayload(name, zh, py, lat, lng){
 let pendingPhoto = null;  // data URL during form
 
 window.openStopForm = function(dayN, stopIdx){
+  if(!requireAdmin("modificare tappe")) return;
   const day = DAYS.find(d=>d.n===dayN);
   const isNew = stopIdx === -1;
   const stop = isNew ? {name:"", zh:"", py:"", desc:"", coords:[null, null], hours:"", duration:"", price:""} : day.stops[stopIdx];
@@ -3103,6 +3117,7 @@ window.openStopForm = function(dayN, stopIdx){
 };
 
 window.handlePhotoFile = async function(input){
+  if(!requireAdmin("caricare foto")) return;
   const file = input.files && input.files[0];
   if(!file) return;
   showToast("Elaborazione foto…");
@@ -3154,6 +3169,7 @@ function resizeImage(file){
 }
 
 window.saveStopForm = async function(dayN, stopIdx){
+  if(!requireAdmin("salvare tappe")) return;
   const name = $("f-name").value.trim();
   if(!name){ showToast("Il nome è obbligatorio"); return; }
   const zh = $("f-zh").value.trim();
@@ -3195,7 +3211,7 @@ window.saveStopForm = async function(dayN, stopIdx){
   if(pendingPhoto){
     let photoValue = pendingPhoto;
     // If logged in and photo is a data URL (newly added), upload to Storage and store URL instead
-    if(_user && typeof pendingPhoto === "string" && pendingPhoto.startsWith("data:")){
+    if(canEdit() && typeof pendingPhoto === "string" && pendingPhoto.startsWith("data:")){
       showToast("Carico foto sul cloud…");
       const url = await uploadPhotoToCloud(pendingPhoto);
       if(url){
@@ -3207,7 +3223,7 @@ window.saveStopForm = async function(dayN, stopIdx){
   }else{
     // If we're removing a photo that was on the cloud, clean up
     const old = PHOTOS[pkey];
-    if(_user && old && typeof old === "string" && old.startsWith("http")){
+    if(canEdit() && old && typeof old === "string" && old.startsWith("http")){
       deletePhotoFromCloud(old);
     }
     delete PHOTOS[pkey];
@@ -3232,6 +3248,7 @@ window.saveStopForm = async function(dayN, stopIdx){
 };
 
 window.deleteStopConfirm = function(dayN, stopIdx){
+  if(!requireAdmin("eliminare tappe")) return;
   const day = DAYS.find(d=>d.n===dayN);
   const stop = day.stops[stopIdx];
   if(!confirm(`Eliminare "${stop.name}"?`)) return;
@@ -3245,6 +3262,7 @@ window.deleteStopConfirm = function(dayN, stopIdx){
 };
 
 window.moveStop = function(dayN, stopIdx, dir){
+  if(!requireAdmin("riordinare tappe")) return;
   const day = DAYS.find(d=>d.n===dayN);
   const ni = stopIdx + dir;
   if(ni < 0 || ni >= day.stops.length) return;
@@ -3253,38 +3271,8 @@ window.moveStop = function(dayN, stopIdx, dir){
   showDay(dayN);
 };
 
-
-window.openReorderStop = function(dayN, stopIdx){
-  const day = DAYS.find(d=>d.n===dayN);
-  if(!day || !day.stops || day.stops.length < 2) return;
-  const stop = day.stops[stopIdx];
-  const html = `
-    <div class="sheet-handle"></div>
-    <div class="sheet-eyebrow">Ordina tappe · Giorno ${dayN}</div>
-    <h3 class="sheet-title">${htmlEscape(stop.name)}</h3>
-    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 12px;line-height:1.5">Scegli la nuova posizione della tappa nella giornata.</p>
-    <div class="position-grid">
-      ${day.stops.map((_,i)=>`
-        <button class="position-pick ${i===stopIdx?'current':''}" ${i===stopIdx?'disabled':''} onclick="moveStopToPosition(${dayN}, ${stopIdx}, ${i})">${i+1}</button>
-      `).join("")}
-    </div>
-    <button class="sheet-close" onclick="closeSheet()">Annulla</button>
-  `;
-  showSheet(html);
-};
-
-window.moveStopToPosition = function(dayN, fromIdx, toIdx){
-  const day = DAYS.find(d=>d.n===dayN);
-  if(!day || fromIdx === toIdx || fromIdx < 0 || toIdx < 0 || fromIdx >= day.stops.length || toIdx >= day.stops.length) return;
-  const [moved] = day.stops.splice(fromIdx, 1);
-  day.stops.splice(toIdx, 0, moved);
-  persistDays();
-  closeSheet();
-  showDay(dayN);
-  showToast(`Tappa spostata in posizione ${toIdx + 1}`);
-};
-
 window.openMoveToDay = function(fromDayN, stopIdx){
+  if(!requireAdmin("spostare tappe")) return;
   const fromDay = DAYS.find(d=>d.n===fromDayN);
   const stop = fromDay.stops[stopIdx];
   const html = `
@@ -3315,6 +3303,7 @@ window.openMoveToDay = function(fromDayN, stopIdx){
 };
 
 window.moveStopAcross = function(fromDayN, stopIdx, toDayN){
+  if(!requireAdmin("spostare tappe")) return;
   if(fromDayN === toDayN) return;
   const fromDay = DAYS.find(d=>d.n===fromDayN);
   const toDay   = DAYS.find(d=>d.n===toDayN);
@@ -3344,6 +3333,7 @@ window.moveStopAcross = function(fromDayN, stopIdx, toDayN){
 };
 
 window.resetDay = function(dayN){
+  if(!requireAdmin("ripristinare tappe")) return;
   if(!confirm(`Ripristinare le tappe originali del Giorno ${dayN}?\n(Le tue modifiche e foto di questo giorno verranno perse.)`)) return;
   const def = DEFAULT_DAYS.find(d=>d.n===dayN);
   const idx = DAYS.findIndex(d=>d.n===dayN);
@@ -3356,6 +3346,7 @@ window.resetDay = function(dayN){
 };
 
 window.resetAll = function(){
+  if(!requireAdmin("ripristinare itinerario")) return;
   if(!confirm("Ripristinare TUTTO l'itinerario originale?\nLe tue modifiche e tutte le foto caricate verranno cancellate.")) return;
   DAYS = JSON.parse(JSON.stringify(DEFAULT_DAYS));
   PHOTOS = {};
@@ -3367,6 +3358,7 @@ window.resetAll = function(){
 };
 
 window.toggleEditMode = function(){
+  if(!requireAdmin("aprire la modalità modifica")) return;
   editMode = !editMode;
   if(currentDay !== null) showDay(currentDay);
 };
@@ -3647,10 +3639,6 @@ function renderHome(){
     const heroCls = "day-hero " + cc + (hero ? " has-photo" : "");
     return `
       <div class="${cls}" onclick="showDay(${d.n})">
-        <button class="day-photo-btn" onclick="event.stopPropagation(); openHomeHeroPicker(${d.n})" title="${hero?'Cambia foto del giorno':'Carica foto del giorno'}">
-          ${hero?'Cambia foto':'Carica foto'}
-        </button>
-        <input type="file" id="home-hero-file-${d.n}" accept="image/*" style="display:none" onclick="event.stopPropagation()" onchange="event.stopPropagation(); handleHomeHeroFile(${d.n}, this)">
         <div class="${heroCls}" style="${heroStyle}">
           <span class="day-hero-watermark zh">${cityChar(d)}</span>
           <div class="day-hero-num">${d.n}<small>giorno</small></div>
@@ -3684,21 +3672,22 @@ window.showDay = function(n){
 
     ${renderMap(d.stops)}
 
+    ${canEdit()?`
     <div class="edit-toolbar">
-      <span class="edit-label">${editMode ? '✎ Modalità modifica attiva' : 'Hai bisogno di modificare?'}</span>
+      <span class="edit-label">${editMode ? '✎ Modalità modifica attiva' : 'Accesso amministratore'}</span>
       <div style="display:flex;gap:6px">
         ${editMode?`<button class="btn btn-ghost" onclick="resetDay(${n})">Ripristina</button>`:''}
         <button class="btn ${editMode?'btn-gold':''}" onclick="toggleEditMode()">
           ${editMode ? 'Fine' : 'Modifica'}
         </button>
       </div>
-    </div>
+    </div>`:''}
 
-    ${editMode ? renderHeroEditor(n) : ''}
+    ${canEdit() && editMode ? renderHeroEditor(n) : ''}
 
     <div class="stops">
       ${d.stops.map((s,i)=>renderStop(s, i+1, n, i, d.stops.length)).join("")}
-      ${editMode ? `
+      ${canEdit() && editMode ? `
         <button class="add-stop-btn" onclick="openStopForm(${n}, -1)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Aggiungi una tappa al Giorno ${n}
@@ -3737,7 +3726,7 @@ function renderStop(s, n, dayN, stopIdx, total){
   const photoHtml = photoUrl ? `
     <div class="stop-photo">
       <img src="${photoUrl}" alt="${attrEscape(s.name)}">
-      ${editMode?`<button class="stop-photo-remove" onclick="event.stopPropagation(); openStopForm(${dayN}, ${stopIdx})" title="Modifica/rimuovi foto">✎</button>`:''}
+      ${canEdit() && editMode?`<button class="stop-photo-remove" onclick="event.stopPropagation(); openStopForm(${dayN}, ${stopIdx})" title="Modifica/rimuovi foto">✎</button>`:''}
     </div>` : '';
 
   const stamp = isVisited ? `<div class="visited-stamp">印</div>` : '';
@@ -3748,22 +3737,14 @@ function renderStop(s, n, dayN, stopIdx, total){
   if(s.duration) badges.push(`<span class="stop-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg><b>Durata</b> ${htmlEscape(s.duration)}</span>`);
   if(s.price)    badges.push(`<span class="stop-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg><b>Prezzo</b> ${htmlEscape(s.price)}</span>`);
   const badgesHtml = badges.length ? `<div class="stop-badges">${badges.join("")}</div>` : "";
-  const practicalRows = [];
-  if(s.hours) practicalRows.push(`<div class="stop-practical-row"><b>Orari</b><span>${htmlEscape(s.hours)}</span></div>`);
-  if(s.duration) practicalRows.push(`<div class="stop-practical-row"><b>Durata</b><span>${htmlEscape(s.duration)}</span></div>`);
-  if(s.price) practicalRows.push(`<div class="stop-practical-row"><b>Biglietto</b><span>${htmlEscape(s.price)}</span></div>`);
-  const practicalHtml = practicalRows.length ? `<div class="stop-practical-panel">${practicalRows.join("")}</div>` : "";
 
-  const editRow = editMode ? `
+  const editRow = canEdit() && editMode ? `
     <div class="stop-edit-row">
       <button class="icon-btn" onclick="moveStop(${dayN}, ${stopIdx}, -1)" ${stopIdx===0?'disabled':''} title="Sposta su">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
       </button>
       <button class="icon-btn" onclick="moveStop(${dayN}, ${stopIdx}, 1)" ${stopIdx===total-1?'disabled':''} title="Sposta giù">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <button class="icon-btn" onclick="openReorderStop(${dayN}, ${stopIdx})" title="Sposta in una posizione precisa">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
       </button>
       <button class="icon-btn" onclick="openMoveToDay(${dayN}, ${stopIdx})" title="Sposta ad altro giorno">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="5" width="12" height="14" rx="2"/><line x1="13" y1="3" x2="13" y2="7"/><line x1="17" y1="3" x2="17" y2="7"/><path d="M3 12h6m0 0l-3-3m3 3l-3 3"/></svg>
@@ -3785,7 +3766,6 @@ function renderStop(s, n, dayN, stopIdx, total){
         <h3 class="stop-name">${htmlEscape(s.name)}</h3>
         ${s.zh?`<div class="stop-zh zh">${htmlEscape(s.zh)}${s.py?`<span class="pinyin">${htmlEscape(s.py)}</span>`:""}</div>`:""}
         ${badgesHtml}
-        ${practicalHtml}
         ${s.desc?`<p class="stop-desc">${htmlEscape(s.desc)}</p>`:""}
         <div class="stop-actions">
           ${hasCoords?`<button class="btn" onclick="openPlace('${payload}')">
@@ -3796,15 +3776,15 @@ function renderStop(s, n, dayN, stopIdx, total){
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
             Copia 中文
           </button>`:""}
-          <button class="visited-toggle ${isVisited?'is-visited':''}" onclick="toggleVisited(${dayN}, '${jsEnc(s.name)}')">
+          ${canEdit()?`<button class="visited-toggle ${isVisited?'is-visited':''}" onclick="toggleVisited(${dayN}, '${jsEnc(s.name)}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="20 6 9 17 4 12"/></svg>
             ${isVisited?'Visitato':'Marca visitato'}
-          </button>
+          </button>`:""}
           ${ticketUrl?`<button class="btn btn-ticket" onclick="showTicket('${jsEnc(ticketKey(dayN, s.name))}','${jsEnc(s.name)}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v2a2 2 0 100 4v2a3 3 0 01-3 3H5a3 3 0 01-3-3v-2a2 2 0 100-4V9z"/><line x1="13" y1="5" x2="13" y2="19" stroke-dasharray="2 2"/></svg>
             Biglietto
           </button>`:""}
-          ${editMode?`<button class="btn btn-gold" onclick="openStopForm(${dayN}, ${stopIdx})">
+          ${canEdit() && editMode?`<button class="btn btn-gold" onclick="openStopForm(${dayN}, ${stopIdx})">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-7 7"/></svg>
             Modifica
           </button>`:""}
@@ -3884,7 +3864,6 @@ function renderPractical(){
       const i = el.dataset.i;
       state[i] = !state[i];
       localStorage.setItem(KEY, JSON.stringify(state));
-      if(typeof scheduleCloudPush === "function") scheduleCloudPush();
       el.classList.toggle("done");
     });
   });
