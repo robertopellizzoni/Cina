@@ -741,45 +741,109 @@ section.active{display:block;animation:fade .35s ease}
 .section-title::before{content:"";display:inline-block;width:18px;height:2px;background:var(--red);margin-right:2px}
 .section-title-zh{font-size:13px;color:var(--ink-faint);font-weight:400;letter-spacing:.1em}
 
-/* CALENDAR GRID */
-.calendar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
-.cal-cell{
-  aspect-ratio:1;border-radius:10px;padding:8px;cursor:pointer;
-  display:flex;flex-direction:column;justify-content:space-between;
-  background:var(--paper-warm);border:1px solid rgba(26,23,20,.04);
-  transition:transform .12s, box-shadow .12s;position:relative;overflow:hidden;
-}
-.cal-cell:active{transform:scale(.96)}
-.cal-cell.beijing{background:linear-gradient(160deg, #f3e6e2 0%, #e8d4cf 100%)}
-.cal-cell.chongqing{background:linear-gradient(160deg, #f0e7d8 0%, #e3d4ba 100%)}
-.cal-cell.chengdu{background:linear-gradient(160deg, #e2eae0 0%, #c8d8c5 100%)}
-.cal-cell.wulong{background:linear-gradient(160deg, #e0e8ee 0%, #c4d3df 100%)}
-.cal-cell.travel{background:linear-gradient(160deg, #f0e9d3 0%, #ddd1ad 100%)}
-.cal-cell.today{box-shadow:0 0 0 2px var(--red), var(--shadow);background:linear-gradient(160deg, #fff 0%, var(--paper-warm) 100%)}
-.cal-cell.past{opacity:.5}
-.cal-num{font-family:"Noto Serif CJK SC","Songti SC",serif;font-size:22px;font-weight:600;color:var(--red);line-height:1}
-.cal-meta{font-size:9px;letter-spacing:.1em;color:var(--ink-faint);text-transform:uppercase;margin-top:2px}
-.cal-city{font-family:"Noto Serif CJK SC","Songti SC",serif;font-size:12px;font-weight:600;color:var(--ink);line-height:1.1;margin-top:auto}
-.cal-zh{font-size:11px;color:var(--red-soft);line-height:1.1;margin-top:1px}
-.cal-today-pill{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px rgba(139,26,26,.2)}
-
-.day-list{display:flex;flex-direction:column;gap:10px}
+/* DAY CARDS WITH HERO */
+.day-list{display:flex;flex-direction:column;gap:14px}
 .day-card{
-  background:#fff;border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);
-  border-left:4px solid var(--gold-soft);cursor:pointer;
-  display:flex;gap:14px;align-items:center;transition:transform .15s, border-color .15s;
+  background:#fff;border-radius:16px;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  overflow:hidden;
+  transition:transform .15s, box-shadow .15s;
+  display:flex;flex-direction:column;
+  border:1px solid rgba(26,23,20,.05);
 }
 .day-card:active{transform:scale(.99)}
-.day-card.today{border-left-color:var(--red);background:linear-gradient(90deg, rgba(139,26,26,.05), #fff 30%)}
-.day-card.past{opacity:.55}
-.day-num{font-family:"Noto Serif CJK SC","Songti SC",serif;font-size:30px;font-weight:600;color:var(--red);min-width:42px;line-height:1}
-.day-info{flex:1;min-width:0}
-.day-date{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:3px}
-.day-title{font-family:"Noto Serif CJK SC","Songti SC",ui-serif,Georgia,serif;font-size:15px;font-weight:600;color:var(--ink);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.day-card.today{box-shadow:0 0 0 2px var(--red), var(--shadow-deep)}
+.day-card.past{opacity:.6}
+
+.day-hero{
+  position:relative;
+  width:100%;
+  height:140px;
+  background-size:cover;background-position:center;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:14px;
+  overflow:hidden;
+}
+.day-hero.beijing{background-image:linear-gradient(135deg, #b4453d 0%, #6e1212 100%)}
+.day-hero.chongqing{background-image:linear-gradient(135deg, #c87f3a 0%, #7a4118 100%)}
+.day-hero.chengdu{background-image:linear-gradient(135deg, #4d7a5a 0%, #1f4530 100%)}
+.day-hero.wulong{background-image:linear-gradient(135deg, #4d6e87 0%, #1e3a52 100%)}
+.day-hero.travel{background-image:linear-gradient(135deg, #b08438 0%, #5e4318 100%)}
+.day-hero.has-photo{background-color:#1a1714}  /* fallback while photo loads */
+.day-hero.has-photo::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg, transparent 40%, rgba(0,0,0,.65) 100%);
+  pointer-events:none;
+}
+.day-hero-watermark{
+  position:absolute;
+  right:-20px;top:-30px;
+  font-family:"Noto Serif CJK SC","Songti SC",serif;
+  font-weight:600;
+  font-size:200px;line-height:1;
+  color:rgba(255,255,255,.08);
+  pointer-events:none;
+  user-select:none;
+}
+.day-hero.has-photo .day-hero-watermark{display:none}
+.day-hero-num{
+  position:relative;z-index:1;
+  font-family:"Noto Serif CJK SC","Songti SC",serif;
+  font-size:38px;font-weight:600;line-height:1;
+  color:rgba(255,255,255,.95);
+  text-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+.day-hero-num small{
+  display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  font-weight:600;font-family:-apple-system,sans-serif;
+  opacity:.85;margin-top:4px;
+}
+.day-hero-today{
+  position:relative;z-index:1;
+  background:rgba(246,239,225,.95);color:var(--red);
+  font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  padding:4px 10px;border-radius:12px;
+  align-self:flex-start;
+}
+
+.day-info{
+  padding:14px 16px 16px;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+}
+.day-info-text{flex:1;min-width:0}
+.day-date{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:4px;font-weight:600}
+.day-title{
+  font-family:"Noto Serif CJK SC","Songti SC",ui-serif,Georgia,serif;
+  font-size:17px;font-weight:600;color:var(--ink);
+  margin:0 0 4px;line-height:1.25;
+}
 .day-city{font-size:12px;color:var(--ink-faint)}
-.day-city .zh{color:var(--red-soft);font-weight:500}
-.day-arrow{color:var(--gold);font-size:18px;flex-shrink:0}
+.day-city .zh{color:var(--red-soft);font-weight:500;margin-left:4px}
+.day-arrow{color:var(--gold);font-size:20px;flex-shrink:0;margin-top:2px}
 .today-pill{display:inline-block;background:var(--red);color:var(--paper);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:10px;margin-left:8px;vertical-align:middle}
+
+/* HERO PHOTO UPLOAD UI in detail */
+.day-hero-edit{
+  background:rgba(163,123,42,.1);border:1px dashed rgba(163,123,42,.4);
+  border-radius:10px;padding:10px 14px;
+  font-size:12.5px;color:var(--gold);font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin:0 0 14px;cursor:pointer;font-family:inherit;
+  width:100%;
+}
+.day-hero-edit input{display:none}
+.day-hero-edit.has-photo{padding:0;border:1px solid rgba(163,123,42,.3);height:160px;position:relative;overflow:hidden}
+.day-hero-edit.has-photo .photo-preview{
+  position:absolute;inset:0;background-size:cover;background-position:center;
+}
+.day-hero-edit.has-photo .photo-actions{
+  position:absolute;bottom:8px;right:8px;display:flex;gap:6px;
+}
+.day-hero-edit.has-photo .photo-actions button{
+  background:rgba(0,0,0,.6);color:white;border:none;
+  border-radius:6px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;
+}
 
 /* DAY DETAIL */
 .detail-back{display:inline-flex;align-items:center;gap:6px;color:var(--red);font-size:14px;background:none;border:none;padding:8px 0;cursor:pointer;font-family:inherit}
@@ -1043,9 +1107,251 @@ section.active{display:block;animation:fade .35s ease}
 @media(min-width:600px){
   main{padding:0 24px}
   .hero-title{font-size:36px}
-  .calendar{grid-template-columns:repeat(8,1fr)}
   .sheet{max-width:520px;left:50%;transform:translate(-50%, 100%);border-radius:20px;bottom:20px}
   .sheet.show{transform:translate(-50%, 0)}
+}
+
+/* === SUPABASE SYNC UI === */
+.account-btn{
+  background:none;border:1px solid rgba(139,26,26,.2);
+  border-radius:18px;padding:5px 10px 5px 7px;
+  color:var(--red);font-family:inherit;font-size:11px;font-weight:600;
+  display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+  letter-spacing:.04em;line-height:1;
+}
+.account-btn.synced{border-color:rgba(45,93,79,.35);color:var(--jade)}
+.account-btn.syncing{border-color:rgba(163,123,42,.4);color:var(--gold)}
+.account-btn.offline{border-color:rgba(0,0,0,.12);color:var(--ink-faint)}
+.account-btn .sync-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:currentColor;flex-shrink:0;
+}
+.account-btn.syncing .sync-dot{animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.auth-status{
+  background:var(--paper-warm);border-radius:8px;padding:10px 12px;
+  font-size:12.5px;color:var(--ink-soft);line-height:1.5;
+  margin:6px 0 12px;
+}
+.auth-status.error{background:rgba(139,26,26,.08);color:var(--red)}
+.auth-status.success{background:rgba(45,93,79,.08);color:var(--jade)}
+.auth-info{
+  background:linear-gradient(180deg, var(--paper-warm), var(--paper-deep));
+  border-radius:10px;padding:12px 14px;
+  margin-bottom:10px;font-size:13px;
+}
+.auth-info b{color:var(--ink);font-weight:600;display:block;margin-bottom:2px;font-size:13.5px}
+.auth-info .auth-email{color:var(--red);font-family:ui-monospace,monospace;font-size:12px;word-break:break-all}
+.auth-info .auth-meta{font-size:11.5px;color:var(--ink-faint);margin-top:6px;line-height:1.4}
+
+/* === VISITED STAMP === */
+.visited-stamp{
+  position:absolute;top:10px;right:10px;
+  font-family:"Noto Serif CJK SC","Songti SC",serif;
+  background:var(--red);color:var(--paper);
+  width:46px;height:46px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  transform:rotate(-12deg);
+  font-size:24px;font-weight:700;
+  box-shadow:0 2px 6px rgba(139,26,26,.35);
+  border:2px solid var(--paper);
+  letter-spacing:0;
+  pointer-events:none;
+  opacity:0;
+  animation:stampIn .55s cubic-bezier(.18,.89,.32,1.28) forwards;
+}
+.stop.is-visited .stop-name{opacity:.65}
+.stop.is-visited .stop-zh{opacity:.65}
+@keyframes stampIn{
+  0%{opacity:0;transform:rotate(-12deg) scale(2.4)}
+  60%{opacity:1;transform:rotate(-12deg) scale(.85)}
+  100%{opacity:1;transform:rotate(-12deg) scale(1)}
+}
+.visited-toggle{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 11px;border-radius:18px;
+  background:rgba(139,26,26,.06);
+  border:1px solid rgba(139,26,26,.2);
+  color:var(--red);font-family:inherit;font-size:11.5px;font-weight:600;
+  cursor:pointer;letter-spacing:.04em;
+}
+.visited-toggle.is-visited{background:var(--red);color:var(--paper);border-color:var(--red)}
+.visited-toggle svg{width:13px;height:13px}
+
+/* === STOP PRACTICAL BADGES === */
+.stop-badges{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 6px}
+.stop-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--paper-warm);border:1px solid rgba(163,123,42,.18);
+  color:var(--gold);font-size:11px;font-weight:600;
+  padding:3px 8px;border-radius:10px;
+  letter-spacing:.02em;
+}
+.stop-badge svg{width:11px;height:11px}
+.stop-badge b{color:var(--ink);font-weight:600}
+
+/* === TICKET BUTTON / VIEWER === */
+.btn.btn-ticket{background:rgba(45,93,79,.06);border-color:rgba(45,93,79,.25);color:var(--jade)}
+.btn.btn-ticket:active{background:rgba(45,93,79,.15)}
+.ticket-viewer{
+  position:fixed;inset:0;z-index:200;
+  background:#000;display:none;
+  align-items:center;justify-content:center;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+.ticket-viewer.show{display:flex}
+.ticket-viewer img{
+  max-width:100%;max-height:100%;
+  object-fit:contain;
+}
+.ticket-viewer-close{
+  position:absolute;top:calc(env(safe-area-inset-top) + 16px);right:16px;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.18);color:white;
+  border:none;font-size:22px;cursor:pointer;font-family:inherit;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.ticket-viewer-info{
+  position:absolute;top:calc(env(safe-area-inset-top) + 16px);left:16px;
+  color:rgba(255,255,255,.85);font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+}
+
+/* === CURRENCY WIDGET === */
+.currency-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 10px;border-radius:18px;
+  background:rgba(163,123,42,.08);
+  border:1px solid rgba(163,123,42,.25);
+  color:var(--gold);font-family:ui-monospace,monospace;font-size:11px;font-weight:600;
+  cursor:pointer;letter-spacing:.02em;
+}
+.currency-pill b{font-family:inherit;color:var(--ink);font-weight:700}
+
+/* === WEATHER STRIP === */
+.weather-strip{
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(90deg, rgba(139,26,26,.04), rgba(163,123,42,.04));
+  border-radius:10px;padding:10px 14px;margin:0 0 14px;
+  border:1px solid rgba(163,123,42,.15);font-size:12.5px;
+}
+.weather-icon{font-size:22px;line-height:1}
+.weather-info{flex:1;line-height:1.3}
+.weather-info b{color:var(--ink);font-weight:600;display:block;font-size:13.5px}
+.weather-info small{color:var(--ink-faint);font-size:11px}
+.weather-meta{color:var(--ink-soft);font-size:11.5px;text-align:right;line-height:1.3}
+.weather-meta b{color:var(--gold);display:block;font-size:13px}
+
+/* === EXPENSES === */
+.expenses-section{
+  background:#fff;border-radius:14px;padding:14px 16px;margin:14px 0;
+  box-shadow:var(--shadow);border-top:3px solid var(--gold);
+}
+.expenses-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.expenses-title{
+  font-family:"Noto Serif CJK SC","Songti SC",serif;font-size:15px;color:var(--ink);font-weight:600;
+}
+.expenses-total{font-family:ui-monospace,monospace;font-size:14px;color:var(--red);font-weight:700}
+.expenses-total small{color:var(--ink-faint);font-weight:500;font-size:11px;margin-left:4px}
+.expenses-list{display:flex;flex-direction:column;gap:6px}
+.expense-row{
+  display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;
+  padding:8px 10px;background:var(--paper-warm);border-radius:8px;font-size:13px;
+}
+.expense-cat{font-size:14px}
+.expense-note{color:var(--ink-soft);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.expense-amount{font-family:ui-monospace,monospace;font-weight:600;color:var(--ink)}
+.expense-del{
+  background:none;border:none;color:var(--ink-faint);cursor:pointer;padding:2px 6px;font-size:14px;
+}
+.expense-del:active{color:var(--red)}
+.add-expense-btn{
+  width:100%;padding:9px;border-radius:8px;margin-top:8px;
+  background:rgba(139,26,26,.06);border:1px dashed rgba(139,26,26,.3);
+  color:var(--red);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;
+}
+.expense-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.cat-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.cat-pick{
+  padding:9px 4px;border-radius:8px;border:1px solid rgba(26,23,20,.12);
+  background:#fff;font-family:inherit;font-size:11px;color:var(--ink-soft);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.cat-pick.active{border-color:var(--red);background:rgba(139,26,26,.08);color:var(--red)}
+.cat-pick-icon{font-size:18px;line-height:1}
+
+/* === STEPS === */
+.steps-row{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(45,93,79,.06);border-radius:10px;padding:10px 14px;margin:10px 0;
+  border:1px solid rgba(45,93,79,.15);font-size:12.5px;
+}
+.steps-icon{font-size:18px}
+.steps-info{flex:1;line-height:1.3}
+.steps-info b{color:var(--ink);font-weight:600;font-family:ui-monospace,monospace;font-size:14px}
+.steps-info small{color:var(--ink-faint);font-size:11px;display:block;margin-top:1px}
+.steps-edit{
+  background:rgba(45,93,79,.1);border:1px solid rgba(45,93,79,.25);
+  color:var(--jade);font-family:inherit;font-size:11.5px;font-weight:600;
+  padding:6px 11px;border-radius:14px;cursor:pointer;
+}
+
+/* === DAILY PHRASES === */
+.day-phrases{
+  background:linear-gradient(180deg, rgba(163,123,42,.04), rgba(163,123,42,.08));
+  border:1px solid rgba(163,123,42,.18);
+  border-radius:14px;padding:14px 16px;margin:14px 0;
+}
+.day-phrases-head{
+  font-family:"Noto Serif CJK SC","Songti SC",serif;
+  font-size:14px;color:var(--gold);font-weight:600;margin:0 0 10px;
+  display:flex;align-items:center;gap:8px;
+}
+.day-phrase{
+  display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;
+  padding:8px 0;border-bottom:1px solid rgba(163,123,42,.15);
+}
+.day-phrase:last-child{border-bottom:none}
+.day-phrase-text{min-width:0}
+.day-phrase-it{font-size:12px;color:var(--ink-soft);font-style:italic;margin-bottom:2px}
+.day-phrase-zh{font-size:16px;color:var(--red);line-height:1.2}
+.day-phrase-py{font-size:11px;color:var(--ink-faint);font-style:italic;margin-top:2px}
+.day-phrase-copy{
+  background:none;border:1px solid rgba(163,123,42,.25);color:var(--gold);
+  padding:5px 9px;border-radius:6px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;
+  flex-shrink:0;
+}
+.day-phrase-copy:active{background:rgba(163,123,42,.1)}
+
+/* === DAY PICKER (move stop to another day) === */
+.day-picker{display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;margin-bottom:14px;padding-right:4px}
+.day-pick{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 12px;border-radius:10px;
+  background:#fff;border:1px solid rgba(26,23,20,.1);
+  font-family:inherit;cursor:pointer;text-align:left;width:100%;
+  transition:background .12s, border-color .12s;
+}
+.day-pick:not(.current):active{background:var(--paper-warm);border-color:var(--red-soft)}
+.day-pick.current{opacity:.45;cursor:not-allowed;background:var(--paper-warm)}
+.day-pick-num{
+  font-family:"Noto Serif CJK SC","Songti SC",serif;
+  font-size:22px;font-weight:600;color:var(--red);
+  min-width:30px;line-height:1;
+}
+.day-pick.current .day-pick-num{color:var(--ink-faint)}
+.day-pick-text{flex:1;min-width:0}
+.day-pick-text b{
+  display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-faint);font-weight:600;margin-bottom:2px;
+}
+.day-pick-text small{
+  display:block;font-size:13px;color:var(--ink);font-weight:500;font-style:normal;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.day-pick-current-tag{
+  font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);font-weight:700;
 }
 </style>
 </head>
@@ -1057,7 +1363,16 @@ section.active{display:block;animation:fade .35s ease}
       <div class="appbar-title">Cina · Agosto 2026</div>
       <div class="appbar-sub" id="appbar-sub">programma di viaggio</div>
     </div>
-    <div class="appbar-zh zh">中国 · 二零二六</div>
+    <div class="appbar-account">
+      <button class="currency-pill" onclick="openCurrencyConverter()" title="Convertitore valuta">
+        ¥<b>1</b>=€<b id="currency-rate">0.13</b>
+      </button>
+      <button class="account-btn offline" id="account-btn" onclick="openAuthSheet()" style="display:none">
+        <span class="sync-dot"></span>
+        <span id="account-btn-label">Accedi</span>
+      </button>
+      <div class="appbar-zh zh">中国 · 二零二六</div>
+    </div>
   </div>
 </header>
 
@@ -1077,10 +1392,7 @@ section.active{display:block;animation:fade .35s ease}
     <div class="countdown" id="countdown"></div>
   </div>
 
-  <h2 class="section-title">Calendario <span class="section-title-zh zh">日历</span></h2>
-  <div class="calendar" id="calendar"></div>
-
-  <h2 class="section-title">Tutti i giorni <span class="section-title-zh zh">每日行程</span></h2>
+  <h2 class="section-title">Agenda di viaggio <span class="section-title-zh zh">行程</span></h2>
   <div class="day-list" id="day-list"></div>
 </section>
 
@@ -1630,9 +1942,314 @@ let PHOTOS = (()=>{
   try{ return JSON.parse(localStorage.getItem(PHOTO_KEY) || "{}"); }catch(e){ return {}; }
 })();
 
-function persistDays(){ localStorage.setItem(STATE_KEY, JSON.stringify(DAYS)); }
-function persistPhotos(){ localStorage.setItem(PHOTO_KEY, JSON.stringify(PHOTOS)); }
+function persistDays(){ localStorage.setItem(STATE_KEY, JSON.stringify(DAYS)); scheduleCloudPush(); }
+function persistPhotos(){ localStorage.setItem(PHOTO_KEY, JSON.stringify(PHOTOS)); scheduleCloudPush(); }
 function photoKey(dayN, name){ return `${dayN}::${name}`; }
+
+// =============================================================
+// SUPABASE CLOUD SYNC
+// =============================================================
+// To enable cloud sync, replace these two values with your project's credentials.
+// Until you do, the app works exactly as before (localStorage only).
+const SUPABASE_URL  = "REPLACE_WITH_YOUR_SUPABASE_URL";
+const SUPABASE_ANON = "REPLACE_WITH_YOUR_SUPABASE_ANON_KEY";
+
+let _sb = null;            // supabase client (null until needed)
+let _user = null;          // current user
+let _pushTimer = null;
+let _isPushing = false;
+
+function isSupabaseConfigured(){
+  return SUPABASE_URL && !SUPABASE_URL.startsWith("REPLACE_") && SUPABASE_ANON && !SUPABASE_ANON.startsWith("REPLACE_");
+}
+
+function loadSupabaseLib(){
+  if(window.supabase) return Promise.resolve(window.supabase);
+  return new Promise((resolve, reject)=>{
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js";
+    s.onload = ()=> resolve(window.supabase);
+    s.onerror = ()=> reject(new Error("Impossibile caricare la libreria Supabase. Servizio non raggiungibile?"));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureSupabase(){
+  if(_sb) return _sb;
+  if(!isSupabaseConfigured()) return null;
+  await loadSupabaseLib();
+  _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+  return _sb;
+}
+
+function setAccountUI(state, label){
+  const btn = $("account-btn");
+  if(!btn) return;
+  btn.style.display = "inline-flex";
+  btn.classList.remove("offline","syncing","synced");
+  btn.classList.add(state);
+  $("account-btn-label").textContent = label;
+}
+
+async function bootstrapAuth(){
+  if(!isSupabaseConfigured()){
+    // No cloud configured — keep button hidden
+    return;
+  }
+  setAccountUI("offline","Accedi");
+  try{
+    const sb = await ensureSupabase();
+    if(!sb) return;
+    const { data: { session } } = await sb.auth.getSession();
+    if(session && session.user){
+      _user = session.user;
+      setAccountUI("synced","Sincronizzato");
+      await pullFromCloud();
+    }
+    sb.auth.onAuthStateChange(async (_event, session)=>{
+      if(session && session.user){
+        _user = session.user;
+        setAccountUI("synced","Sincronizzato");
+        await pullFromCloud();
+      }else{
+        _user = null;
+        setAccountUI("offline","Accedi");
+      }
+    });
+  }catch(e){
+    console.warn("Supabase non raggiungibile:", e);
+    setAccountUI("offline","Solo locale");
+  }
+}
+
+window.openAuthSheet = async function(){
+  const sheetHtml = _user
+    ? renderAccountSheet()
+    : renderLoginSheet();
+  showSheet(sheetHtml);
+};
+
+function renderLoginSheet(){
+  return `
+    <div class="sheet-handle"></div>
+    <div class="sheet-eyebrow">Accedi per sincronizzare</div>
+    <h3 class="sheet-title">Sincronizza tra dispositivi</h3>
+    <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px">Le tue modifiche e foto vengono salvate sul cloud e ritrovate da qualsiasi telefono o computer su cui apri questo link.</p>
+    <div class="editor-field">
+      <label>Email</label>
+      <input id="auth-email" type="email" placeholder="tu@esempio.it" autocomplete="email" inputmode="email">
+      <div class="editor-hint">Ricevi un link via email — niente password da ricordare</div>
+    </div>
+    <div id="auth-status" class="auth-status" style="display:none"></div>
+    <div class="editor-actions">
+      <button class="editor-btn primary" onclick="sendMagicLink()">Invia link</button>
+      <button class="editor-btn" onclick="closeSheet()">Annulla</button>
+    </div>
+  `;
+}
+
+function renderAccountSheet(){
+  const lastSync = localStorage.getItem("cina2026.lastSync");
+  const lastSyncText = lastSync ? new Date(parseInt(lastSync)).toLocaleString("it-IT") : "mai";
+  return `
+    <div class="sheet-handle"></div>
+    <div class="sheet-eyebrow">Account</div>
+    <h3 class="sheet-title">Sincronizzazione attiva</h3>
+    <div class="auth-info">
+      <b>Connesso come</b>
+      <div class="auth-email">${htmlEscape(_user.email || "(senza email)")}</div>
+      <div class="auth-meta">Ultima sincronizzazione: ${lastSyncText}</div>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px">Modifiche e foto vengono caricate automaticamente sul cloud. Aprendo lo stesso link su un altro dispositivo e accedendo con questa email ritroverai tutto.</p>
+    <div class="editor-actions">
+      <button class="editor-btn primary" onclick="manualSync()">Sincronizza ora</button>
+      <button class="editor-btn" onclick="signOut()">Disconnetti</button>
+    </div>
+  `;
+}
+
+window.sendMagicLink = async function(){
+  const email = ($("auth-email").value || "").trim();
+  const status = $("auth-status");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    status.style.display = "block"; status.className = "auth-status error";
+    status.textContent = "Email non valida";
+    return;
+  }
+  status.style.display = "block"; status.className = "auth-status";
+  status.textContent = "Invio in corso…";
+  try{
+    const sb = await ensureSupabase();
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.href.split("#")[0].split("?")[0] }
+    });
+    if(error) throw error;
+    status.className = "auth-status success";
+    status.innerHTML = `Email inviata a <b>${htmlEscape(email)}</b>. Apri il link che hai ricevuto per accedere — questa scheda si aggiornerà da sola.`;
+  }catch(e){
+    status.className = "auth-status error";
+    status.textContent = "Errore: " + (e.message || e);
+  }
+};
+
+window.signOut = async function(){
+  if(!confirm("Disconnetti? I dati restano sul cloud e tornerai a vederli accedendo di nuovo.")) return;
+  try{
+    const sb = await ensureSupabase();
+    await sb.auth.signOut();
+    closeSheet();
+    showToast("Disconnesso");
+  }catch(e){ showToast("Errore: " + e.message); }
+};
+
+window.manualSync = async function(){
+  closeSheet();
+  await pushToCloud(true);
+};
+
+function collectLocalState(){
+  return {
+    days: DAYS,
+    photos: PHOTOS,
+    heros: HERO_PHOTOS,
+    visited: VISITED,
+    tickets: TICKETS,
+    expenses: EXPENSES,
+    steps: STEPS,
+    check: JSON.parse(localStorage.getItem("cina2026.check") || "{}"),
+    tile: localStorage.getItem(TILE_KEY) || "osm"
+  };
+}
+
+async function pullFromCloud(){
+  if(!_user) return;
+  try{
+    setAccountUI("syncing","Ricevo dati…");
+    const sb = await ensureSupabase();
+    const { data, error } = await sb.from("user_data").select("data").eq("user_id", _user.id).maybeSingle();
+    if(error) throw error;
+    if(data && data.data){
+      const cloudState = data.data;
+      // Cloud wins on first pull (could add merge logic later)
+      if(cloudState.days && Array.isArray(cloudState.days) && cloudState.days.length === DAYS.length){
+        DAYS = cloudState.days;
+        localStorage.setItem(STATE_KEY, JSON.stringify(DAYS));
+      }
+      if(cloudState.photos){
+        PHOTOS = cloudState.photos;
+        localStorage.setItem(PHOTO_KEY, JSON.stringify(PHOTOS));
+      }
+      if(cloudState.heros){
+        HERO_PHOTOS = cloudState.heros;
+        localStorage.setItem(HERO_KEY, JSON.stringify(HERO_PHOTOS));
+      }
+      if(cloudState.visited){
+        VISITED = cloudState.visited;
+        localStorage.setItem(VISITED_KEY, JSON.stringify(VISITED));
+      }
+      if(cloudState.tickets){
+        TICKETS = cloudState.tickets;
+        localStorage.setItem(TICKETS_KEY, JSON.stringify(TICKETS));
+      }
+      if(cloudState.expenses){
+        EXPENSES = cloudState.expenses;
+        localStorage.setItem(EXP_KEY, JSON.stringify(EXPENSES));
+      }
+      if(cloudState.steps){
+        STEPS = cloudState.steps;
+        localStorage.setItem(STEPS_KEY, JSON.stringify(STEPS));
+      }
+      if(cloudState.check){
+        localStorage.setItem("cina2026.check", JSON.stringify(cloudState.check));
+      }
+      if(cloudState.tile){
+        localStorage.setItem(TILE_KEY, cloudState.tile);
+        currentTile = cloudState.tile;
+      }
+      // Re-render currently visible view
+      renderHome();
+      if(currentDay) showDay(currentDay);
+      renderPhrases(); renderPractical();
+      showToast("Dati ricevuti dal cloud");
+    }else{
+      // First time on this account — push local state up
+      await pushToCloud(false);
+    }
+    localStorage.setItem("cina2026.lastSync", String(Date.now()));
+    setAccountUI("synced","Sincronizzato");
+  }catch(e){
+    console.warn("pullFromCloud:", e);
+    setAccountUI("offline","Errore sync");
+  }
+}
+
+function scheduleCloudPush(){
+  if(!_user) return;
+  clearTimeout(_pushTimer);
+  _pushTimer = setTimeout(()=> pushToCloud(false), 1200);
+}
+
+async function pushToCloud(showFeedback){
+  if(!_user || _isPushing) return;
+  _isPushing = true;
+  try{
+    setAccountUI("syncing","Invio…");
+    const sb = await ensureSupabase();
+    const payload = collectLocalState();
+    const { error } = await sb.from("user_data").upsert({
+      user_id: _user.id,
+      data: payload,
+      updated_at: new Date().toISOString()
+    });
+    if(error) throw error;
+    localStorage.setItem("cina2026.lastSync", String(Date.now()));
+    setAccountUI("synced","Sincronizzato");
+    if(showFeedback) showToast("Dati salvati sul cloud");
+  }catch(e){
+    console.warn("pushToCloud:", e);
+    setAccountUI("offline","Errore sync");
+    if(showFeedback) showToast("Errore: " + (e.message||e));
+  }finally{
+    _isPushing = false;
+  }
+}
+
+// Photos: when user is logged in, upload to Storage instead of keeping base64.
+async function uploadPhotoToCloud(base64DataUrl){
+  if(!_user) return null;
+  try{
+    const sb = await ensureSupabase();
+    // Convert data URL → Blob
+    const res = await fetch(base64DataUrl);
+    const blob = await res.blob();
+    const filename = `${_user.id}/${crypto.randomUUID()}.jpg`;
+    const { error } = await sb.storage.from("photos").upload(filename, blob, {
+      cacheControl: "31536000",
+      upsert: false,
+      contentType: "image/jpeg"
+    });
+    if(error) throw error;
+    const { data } = sb.storage.from("photos").getPublicUrl(filename);
+    return data.publicUrl;
+  }catch(e){
+    console.warn("uploadPhotoToCloud:", e);
+    return null;
+  }
+}
+
+async function deletePhotoFromCloud(url){
+  if(!_user || !url || !url.startsWith("http")) return;
+  try{
+    const sb = await ensureSupabase();
+    // Extract filename from URL
+    const m = url.match(/photos\/(.+)$/);
+    if(!m) return;
+    await sb.storage.from("photos").remove([m[1]]);
+  }catch(e){ console.warn("deletePhotoFromCloud:", e); }
+}
 
 // =============================================================
 // HELPERS
@@ -1675,6 +2292,9 @@ function geoLink(lat,lng,name){
 }
 function htmlEscape(s){ return String(s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function attrEscape(s){ return String(s||"").replace(/'/g,"&#39;").replace(/"/g,"&quot;"); }
+// jsEnc: URL-encode a string AND replace ' with %27 so it's safe inside an inline JS
+// onclick="..." attribute that wraps it in single quotes. Always decode with decodeURIComponent.
+function jsEnc(s){ return encodeURIComponent(String(s||"")).replace(/'/g, "%27"); }
 
 // City detection for calendar coloring
 function cityClass(d){
@@ -1686,6 +2306,583 @@ function cityClass(d){
   if(city.includes("wulong")) return "wulong";
   if(city.includes("rientro")) return "travel";
   return "";
+}
+
+function cityChar(d){
+  const cls = cityClass(d);
+  return ({beijing:"京", chongqing:"渝", chengdu:"蓉", wulong:"武", travel:"行"})[cls] || "中";
+}
+
+// HERO PHOTOS — one optional banner image per day (separate from per-stop PHOTOS)
+const HERO_KEY = "cina2026.heroPhotos";
+let HERO_PHOTOS = (()=>{
+  try{ return JSON.parse(localStorage.getItem(HERO_KEY) || "{}"); }catch(e){ return {}; }
+})();
+function persistHeros(){
+  localStorage.setItem(HERO_KEY, JSON.stringify(HERO_PHOTOS));
+  if(typeof scheduleCloudPush === "function") scheduleCloudPush();
+}
+function getHeroPhoto(dayN){ return HERO_PHOTOS[dayN] || null; }
+
+// === EXPENSES ===
+const EXP_KEY = "cina2026.expenses";
+let EXPENSES = (()=>{ try{ return JSON.parse(localStorage.getItem(EXP_KEY)||"{}"); }catch(e){ return {}; } })();
+function persistExpenses(){
+  localStorage.setItem(EXP_KEY, JSON.stringify(EXPENSES));
+  if(typeof scheduleCloudPush === "function") scheduleCloudPush();
+}
+
+// === VISITED ===
+const VISITED_KEY = "cina2026.visited";
+let VISITED = (()=>{ try{ return JSON.parse(localStorage.getItem(VISITED_KEY)||"{}"); }catch(e){ return {}; } })();
+function persistVisited(){
+  localStorage.setItem(VISITED_KEY, JSON.stringify(VISITED));
+  if(typeof scheduleCloudPush === "function") scheduleCloudPush();
+}
+function visitedKey(dayN, stopName){ return `${dayN}::${stopName}`; }
+
+// === TICKETS ===
+const TICKETS_KEY = "cina2026.tickets";
+let TICKETS = (()=>{ try{ return JSON.parse(localStorage.getItem(TICKETS_KEY)||"{}"); }catch(e){ return {}; } })();
+function persistTickets(){
+  localStorage.setItem(TICKETS_KEY, JSON.stringify(TICKETS));
+  if(typeof scheduleCloudPush === "function") scheduleCloudPush();
+}
+function ticketKey(dayN, stopName){ return `${dayN}::${stopName}`; }
+
+// === STEPS ===
+const STEPS_KEY = "cina2026.steps";
+let STEPS = (()=>{ try{ return JSON.parse(localStorage.getItem(STEPS_KEY)||"{}"); }catch(e){ return {}; } })();
+function persistSteps(){
+  localStorage.setItem(STEPS_KEY, JSON.stringify(STEPS));
+  if(typeof scheduleCloudPush === "function") scheduleCloudPush();
+}
+
+// === EXCHANGE RATE (CNY -> EUR) ===
+const RATE_KEY = "cina2026.rate";
+const DEFAULT_RATE = { eurPerCny: 0.128, fetched: 0 };  // approx fallback
+function getRate(){
+  try{ return JSON.parse(localStorage.getItem(RATE_KEY) || "null") || DEFAULT_RATE; }catch(e){ return DEFAULT_RATE; }
+}
+function saveRate(r){ localStorage.setItem(RATE_KEY, JSON.stringify(r)); }
+
+async function refreshRateIfStale(){
+  const r = getRate();
+  // refresh if older than 12h
+  if(Date.now() - r.fetched < 12*60*60*1000) return r;
+  try{
+    // Open-Meteo's sister project for currency or use exchangerate.host
+    // exchangerate.host is free, no key
+    const res = await fetch("https://api.exchangerate.host/latest?base=CNY&symbols=EUR");
+    const j = await res.json();
+    if(j && j.rates && j.rates.EUR){
+      const next = { eurPerCny: j.rates.EUR, fetched: Date.now() };
+      saveRate(next);
+      return next;
+    }
+  }catch(e){}
+  return r;
+}
+function cnyToEur(cny){
+  const r = getRate();
+  return cny * r.eurPerCny;
+}
+
+function renderHeroEditor(dayN){
+  const photo = getHeroPhoto(dayN);
+  if(photo){
+    return `
+      <div class="day-hero-edit has-photo">
+        <div class="photo-preview" style="background-image:url('${attrEscape(photo)}')"></div>
+        <div class="photo-actions">
+          <button onclick="document.getElementById('hero-file-${dayN}').click()">Cambia</button>
+          <button onclick="removeHero(${dayN})">Rimuovi</button>
+        </div>
+        <input type="file" id="hero-file-${dayN}" accept="image/*" onchange="handleHeroFile(${dayN}, this)">
+      </div>`;
+  }
+  return `
+    <label class="day-hero-edit">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+      Aggiungi foto-copertina del giorno
+      <input type="file" accept="image/*" onchange="handleHeroFile(${dayN}, this)">
+    </label>`;
+}
+
+window.handleHeroFile = async function(dayN, input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  showToast("Elaborazione foto…");
+  let dataUrl = await resizeImage(file);
+  if(_user){
+    showToast("Carico sul cloud…");
+    const url = await uploadPhotoToCloud(dataUrl);
+    if(url) dataUrl = url;
+  }
+  HERO_PHOTOS[dayN] = dataUrl;
+  persistHeros();
+  renderHome();
+  showDay(dayN);
+  showToast("Copertina aggiornata");
+};
+
+window.removeHero = function(dayN){
+  if(!confirm("Rimuovere la foto-copertina di questo giorno?")) return;
+  const old = HERO_PHOTOS[dayN];
+  if(_user && old && typeof old === "string" && old.startsWith("http")){
+    deletePhotoFromCloud(old);
+  }
+  delete HERO_PHOTOS[dayN];
+  persistHeros();
+  renderHome();
+  showDay(dayN);
+  showToast("Copertina rimossa");
+};
+
+// === VISITED TOGGLE ===
+window.toggleVisited = function(dayN, encStopName){
+  const stopName = decodeURIComponent(encStopName);
+  const k = visitedKey(dayN, stopName);
+  if(VISITED[k]){
+    delete VISITED[k];
+  }else{
+    VISITED[k] = Date.now();
+  }
+  persistVisited();
+  showDay(dayN);
+};
+
+// === TICKET VIEWER ===
+window.showTicket = function(encTkey, encLabel){
+  const tkey = decodeURIComponent(encTkey);
+  const label = decodeURIComponent(encLabel);
+  const url = TICKETS[tkey];
+  if(!url) return;
+  let viewer = $("ticket-viewer");
+  if(!viewer){
+    viewer = document.createElement("div");
+    viewer.id = "ticket-viewer";
+    viewer.className = "ticket-viewer";
+    viewer.innerHTML = `
+      <button class="ticket-viewer-close" onclick="closeTicket()">×</button>
+      <div class="ticket-viewer-info" id="ticket-viewer-info"></div>
+      <img id="ticket-viewer-img" alt="biglietto">`;
+    document.body.appendChild(viewer);
+  }
+  $("ticket-viewer-info").textContent = label;
+  $("ticket-viewer-img").src = url;
+  viewer.classList.add("show");
+};
+window.closeTicket = function(){
+  const v = $("ticket-viewer"); if(v) v.classList.remove("show");
+};
+
+window.uploadTicketFor = async function(dayN, encStopName, input){
+  const stopName = decodeURIComponent(encStopName);
+  const file = input.files && input.files[0];
+  if(!file) return;
+  showToast("Elaborazione…");
+  let dataUrl = await resizeImage(file);
+  if(_user){
+    const url = await uploadPhotoToCloud(dataUrl);
+    if(url) dataUrl = url;
+  }
+  TICKETS[ticketKey(dayN, stopName)] = dataUrl;
+  persistTickets();
+  showDay(dayN);
+  showToast("Biglietto salvato");
+};
+window.removeTicketFor = function(dayN, encStopName){
+  const stopName = decodeURIComponent(encStopName);
+  if(!confirm("Rimuovere il biglietto per questa tappa?")) return;
+  const k = ticketKey(dayN, stopName);
+  const old = TICKETS[k];
+  if(_user && old && typeof old === "string" && old.startsWith("http")) deletePhotoFromCloud(old);
+  delete TICKETS[k];
+  persistTickets();
+  showDay(dayN);
+  showToast("Biglietto rimosso");
+};
+
+// === CURRENCY WIDGET ===
+window.openCurrencyConverter = async function(){
+  await refreshRateIfStale();
+  const r = getRate();
+  const fetched = r.fetched ? new Date(r.fetched).toLocaleString("it-IT") : "valore di base (offline)";
+  showSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-eyebrow">Convertitore valuta</div>
+    <h3 class="sheet-title">CNY ↔ EUR</h3>
+    <p style="font-size:12px;color:var(--ink-faint);margin:0 0 12px">Cambio: 1 CNY = ${r.eurPerCny.toFixed(4)} EUR · aggiornato ${fetched}</p>
+    <div class="editor-field">
+      <label>Yuan ¥</label>
+      <input id="conv-cny" type="number" inputmode="decimal" oninput="convertFromCny(this.value)" placeholder="0">
+    </div>
+    <div class="editor-field">
+      <label>Euro €</label>
+      <input id="conv-eur" type="number" inputmode="decimal" oninput="convertFromEur(this.value)" placeholder="0">
+    </div>
+    <div class="editor-actions">
+      <button class="editor-btn primary" onclick="closeSheet()">Chiudi</button>
+    </div>
+  `);
+};
+window.convertFromCny = function(v){
+  const num = parseFloat(v) || 0;
+  $("conv-eur").value = (num * getRate().eurPerCny).toFixed(2);
+};
+window.convertFromEur = function(v){
+  const num = parseFloat(v) || 0;
+  $("conv-cny").value = (num / getRate().eurPerCny).toFixed(2);
+};
+
+// === EXPENSES ===
+const EXPENSE_CATS = [
+  {id:"cibo", icon:"🍜", label:"Cibo"},
+  {id:"trasp", icon:"🚇", label:"Trasporto"},
+  {id:"biglietti", icon:"🎟️", label:"Biglietti"},
+  {id:"shop", icon:"🛍️", label:"Shopping"},
+  {id:"hotel", icon:"🏨", label:"Hotel"},
+  {id:"altro", icon:"·", label:"Altro"}
+];
+function getExpenses(dayN){ return EXPENSES[dayN] || []; }
+function getExpenseTotal(dayN){
+  return getExpenses(dayN).reduce((s, e)=> s + (e.amount || 0), 0);
+}
+function renderExpenses(dayN){
+  const list = getExpenses(dayN);
+  const totalCny = getExpenseTotal(dayN);
+  const totalEur = cnyToEur(totalCny);
+  const rows = list.map((e, i)=>{
+    const cat = EXPENSE_CATS.find(c=>c.id===e.cat) || EXPENSE_CATS[5];
+    return `
+      <div class="expense-row">
+        <span class="expense-cat">${cat.icon}</span>
+        <span class="expense-note">${htmlEscape(e.note || cat.label)}</span>
+        <span class="expense-amount">¥${e.amount.toFixed(0)}</span>
+        <button class="expense-del" onclick="deleteExpense(${dayN}, ${i})" title="Elimina">×</button>
+      </div>`;
+  }).join("");
+  return `
+    <div class="expenses-section">
+      <div class="expenses-header">
+        <span class="expenses-title">Spese del giorno <span style="color:var(--ink-faint);font-weight:400;font-size:12px">花费</span></span>
+        <span class="expenses-total">¥${totalCny.toFixed(0)}<small>· €${totalEur.toFixed(2)}</small></span>
+      </div>
+      ${list.length ? `<div class="expenses-list">${rows}</div>` : `<div style="font-size:12.5px;color:var(--ink-faint);font-style:italic;padding:6px 0">Ancora nessuna spesa registrata.</div>`}
+      <button class="add-expense-btn" onclick="openExpenseForm(${dayN})">+ Aggiungi spesa</button>
+    </div>`;
+}
+window.openExpenseForm = function(dayN){
+  showSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-eyebrow">Nuova spesa · Giorno ${dayN}</div>
+    <h3 class="sheet-title">Aggiungi spesa</h3>
+    <div class="editor-field">
+      <label>Categoria</label>
+      <div class="cat-picker" id="cat-picker">
+        ${EXPENSE_CATS.map((c,i)=>`<button class="cat-pick ${i===0?'active':''}" data-cat="${c.id}" onclick="pickCat(this)"><span class="cat-pick-icon">${c.icon}</span>${c.label}</button>`).join("")}
+      </div>
+    </div>
+    <div class="expense-form-grid">
+      <div class="editor-field" style="margin:0">
+        <label>Importo (¥)</label>
+        <input id="exp-amount" type="number" inputmode="decimal" placeholder="0" autofocus>
+      </div>
+      <div class="editor-field" style="margin:0">
+        <label>≈ Euro</label>
+        <input id="exp-eur" type="text" readonly placeholder="—" style="background:var(--paper-warm)">
+      </div>
+    </div>
+    <div class="editor-field">
+      <label>Nota (opzionale)</label>
+      <input id="exp-note" type="text" placeholder="es. ravioli alla stazione">
+    </div>
+    <div class="editor-actions">
+      <button class="editor-btn primary" onclick="saveExpense(${dayN})">Salva</button>
+      <button class="editor-btn" onclick="closeSheet()">Annulla</button>
+    </div>`);
+  // wire up live conversion
+  setTimeout(()=>{
+    const a = $("exp-amount");
+    if(a){
+      a.addEventListener("input", ()=>{
+        const v = parseFloat(a.value) || 0;
+        $("exp-eur").value = v ? "€"+(v*getRate().eurPerCny).toFixed(2) : "—";
+      });
+    }
+  }, 80);
+};
+window.pickCat = function(btn){
+  document.querySelectorAll(".cat-pick").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+};
+window.saveExpense = function(dayN){
+  const amount = parseFloat($("exp-amount").value) || 0;
+  if(amount <= 0){ showToast("Inserisci un importo"); return; }
+  const note = ($("exp-note").value || "").trim();
+  const catBtn = document.querySelector(".cat-pick.active");
+  const cat = catBtn ? catBtn.dataset.cat : "altro";
+  if(!EXPENSES[dayN]) EXPENSES[dayN] = [];
+  EXPENSES[dayN].push({ amount, cat, note, ts: Date.now() });
+  persistExpenses();
+  closeSheet();
+  showDay(dayN);
+};
+window.deleteExpense = function(dayN, idx){
+  if(!confirm("Eliminare questa spesa?")) return;
+  EXPENSES[dayN].splice(idx, 1);
+  if(EXPENSES[dayN].length === 0) delete EXPENSES[dayN];
+  persistExpenses();
+  showDay(dayN);
+};
+
+// === STEPS ===
+function renderSteps(dayN){
+  const s = STEPS[dayN] || 0;
+  const km = (s * 0.0007).toFixed(1);  // ~70cm per step
+  return `
+    <div class="steps-row">
+      <span class="steps-icon">👣</span>
+      <div class="steps-info">
+        <b>${s ? s.toLocaleString("it-IT") : "—"}</b>
+        <small>${s ? `passi · ~${km} km` : 'inserisci i passi a fine giornata'}</small>
+      </div>
+      <button class="steps-edit" onclick="editSteps(${dayN})">${s ? 'Modifica' : 'Inserisci'}</button>
+    </div>`;
+}
+window.editSteps = function(dayN){
+  const cur = STEPS[dayN] || "";
+  const v = prompt("Quanti passi hai fatto oggi?\n(prendi il numero da Google Fit / Salute / Samsung Health)", cur);
+  if(v === null) return;
+  const n = parseInt((v||"").replace(/[\s.,]/g,""), 10);
+  if(isNaN(n) || n < 0){ showToast("Numero non valido"); return; }
+  if(n === 0) delete STEPS[dayN]; else STEPS[dayN] = n;
+  persistSteps();
+  showDay(dayN);
+};
+
+// === WEATHER ===
+const WEATHER_CACHE_KEY = "cina2026.weather";
+function getWeatherCache(){ try{ return JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY)||"{}"); }catch(e){ return {}; } }
+function setWeatherCache(c){ localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(c)); }
+
+// Seasonal averages for August in the relevant cities (used as fallback when forecast not yet available)
+function climatologyForCity(city){
+  const c = (city||"").toLowerCase();
+  if(c.includes("pechino")) return {tmin:23, tmax:31, rain:35, uv:8, desc:"Caldo umido, possibili temporali"};
+  if(c.includes("chongqing")) return {tmin:27, tmax:36, rain:30, uv:8, desc:"Molto caldo, una delle 'fornaci'"};
+  if(c.includes("chengdu")) return {tmin:23, tmax:30, rain:55, uv:7, desc:"Umido con piogge frequenti"};
+  if(c.includes("wulong")) return {tmin:21, tmax:29, rain:50, uv:6, desc:"Più fresco, montagna"};
+  return {tmin:24, tmax:32, rain:40, uv:7, desc:"Estate cinese"};
+}
+
+async function fetchWeather(dayN, lat, lng, dateStr){
+  const cache = getWeatherCache();
+  const cacheKey = `${dayN}.${dateStr}`;
+  const cached = cache[cacheKey];
+  if(cached && (Date.now() - cached.fetched < 6*60*60*1000)) return cached.data;
+  // Forecast API only works for dates within ~16 days. If the trip is further away, skip the API call.
+  const target = new Date(dateStr);
+  const daysAhead = (target - new Date()) / 86400000;
+  if(daysAhead > 14 || daysAhead < -1) return null;
+  try{
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,weather_code&start_date=${dateStr}&end_date=${dateStr}&timezone=auto`;
+    const res = await fetch(url);
+    if(!res.ok) return null;
+    const j = await res.json();
+    if(j && j.daily){
+      cache[cacheKey] = { data: j.daily, fetched: Date.now() };
+      setWeatherCache(cache);
+      return j.daily;
+    }
+  }catch(e){}
+  return null;
+}
+
+function weatherIcon(code){
+  if(code === 0) return "☀️";
+  if(code <= 3) return "⛅";
+  if(code <= 48) return "🌫️";
+  if(code <= 67) return "🌧️";
+  if(code <= 77) return "❄️";
+  if(code <= 82) return "🌧️";
+  if(code <= 86) return "🌨️";
+  if(code >= 95) return "⛈️";
+  return "🌤️";
+}
+function weatherDesc(code){
+  if(code === 0) return "Sereno";
+  if(code <= 2) return "Poco nuvoloso";
+  if(code === 3) return "Nuvoloso";
+  if(code <= 48) return "Nebbia";
+  if(code <= 57) return "Pioviggine";
+  if(code <= 67) return "Pioggia";
+  if(code <= 77) return "Neve";
+  if(code <= 82) return "Rovesci";
+  if(code <= 86) return "Neve";
+  if(code >= 95) return "Temporale";
+  return "—";
+}
+
+async function renderWeatherInto(elementId, dayN, day){
+  const el = document.getElementById(elementId);
+  if(!el) return;
+  const firstWithCoords = day.stops.find(s => s.coords && s.coords.length===2);
+
+  let html = "";
+  if(firstWithCoords){
+    const data = await fetchWeather(dayN, firstWithCoords.coords[0], firstWithCoords.coords[1], day.date);
+    if(data){
+      const code = (data.weather_code && data.weather_code[0]) || 0;
+      const tmax = data.temperature_2m_max && data.temperature_2m_max[0];
+      const tmin = data.temperature_2m_min && data.temperature_2m_min[0];
+      const rain = (data.precipitation_probability_max && data.precipitation_probability_max[0]) || 0;
+      const uv = (data.uv_index_max && data.uv_index_max[0]) || 0;
+      html = `
+        <span class="weather-icon">${weatherIcon(code)}</span>
+        <div class="weather-info">
+          <b>${weatherDesc(code)}</b>
+          <small>min ${Math.round(tmin)}° · max ${Math.round(tmax)}°</small>
+        </div>
+        <div class="weather-meta">
+          <b>${rain}%</b>pioggia · UV ${Math.round(uv)}
+        </div>`;
+    }
+  }
+  if(!html){
+    // Fallback: seasonal climatology (visible until 14 days before the trip)
+    const c = climatologyForCity(day.city);
+    html = `
+      <span class="weather-icon">🌡️</span>
+      <div class="weather-info">
+        <b>${c.desc}</b>
+        <small>media stagionale · agosto</small>
+      </div>
+      <div class="weather-meta">
+        <b>${c.tmin}–${c.tmax}°C</b>~${c.rain}% pioggia · UV ${c.uv}
+      </div>`;
+  }
+  el.innerHTML = html;
+  el.style.display = "flex";
+}
+
+// === DAILY PHRASES ===
+// Frasi cinesi contestuali per ogni giornata (3-4 per giorno, taglio sull'attività del giorno)
+const DAY_PHRASES = {
+  1: [
+    {it:"Un biglietto per favore", zh:"一张票，谢谢", py:"yì zhāng piào, xièxie"},
+    {it:"Dov'è l'uscita?", zh:"出口在哪里？", py:"chūkǒu zài nǎlǐ?"},
+    {it:"Posso scattare una foto?", zh:"我可以拍照吗？", py:"wǒ kěyǐ pāizhào ma?"},
+    {it:"Un noodles vegetariano", zh:"一份素面", py:"yí fèn sù miàn"}
+  ],
+  2: [
+    {it:"Dove si entra alla Città Proibita?", zh:"故宫的入口在哪里？", py:"Gùgōng de rùkǒu zài nǎlǐ?"},
+    {it:"Avete audioguida in inglese?", zh:"有英文导览吗？", py:"yǒu yīngwén dǎolǎn ma?"},
+    {it:"A che ora chiude?", zh:"几点关门？", py:"jǐ diǎn guānmén?"},
+    {it:"Vorrei una copia del biglietto", zh:"我可以再要一张票吗？", py:"wǒ kěyǐ zài yào yì zhāng piào ma?"}
+  ],
+  3: [
+    {it:"Quanto dura il giro in barca?", zh:"游船要多久？", py:"yóuchuán yào duō jiǔ?"},
+    {it:"Una bottiglia d'acqua", zh:"一瓶水", py:"yì píng shuǐ"},
+    {it:"Posso pagare con WeChat?", zh:"可以微信支付吗？", py:"kěyǐ Wēixìn zhīfù ma?"},
+    {it:"Dove si torna in centro?", zh:"怎么回市中心？", py:"zěnme huí shìzhōngxīn?"}
+  ],
+  4: [
+    {it:"Senza piccante, per favore", zh:"不要辣，谢谢", py:"bú yào là, xièxie"},
+    {it:"Posso fotografare l'interno del tempio?", zh:"庙里可以拍照吗？", py:"miào lǐ kěyǐ pāizhào ma?"},
+    {it:"Dov'è il mercato notturno?", zh:"夜市在哪里？", py:"yèshì zài nǎlǐ?"},
+    {it:"Due malatang, medio piccante", zh:"两份麻辣烫，中辣", py:"liǎng fèn málàtàng, zhōng là"}
+  ],
+  5: [
+    {it:"Dov'è la cabinovia?", zh:"缆车在哪里？", py:"lǎnchē zài nǎlǐ?"},
+    {it:"Quanto costa il toboga?", zh:"滑道多少钱？", py:"huádào duōshao qián?"},
+    {it:"Avete servizio di deposito bagagli?", zh:"有寄存行李吗？", py:"yǒu jìcún xínglǐ ma?"},
+    {it:"A che ora parte l'ultima cabinovia?", zh:"最后一班缆车几点？", py:"zuìhòu yì bān lǎnchē jǐ diǎn?"}
+  ],
+  6: [
+    {it:"Avete il Fast Pass disponibile?", zh:"有快通票吗？", py:"yǒu kuàitōng piào ma?"},
+    {it:"Quanti minuti di attesa?", zh:"等待时间多久？", py:"děngdài shíjiān duō jiǔ?"},
+    {it:"Dov'è l'attrazione di Harry Potter?", zh:"哈利波特在哪？", py:"Hālì Bōtè zài nǎ?"},
+    {it:"Si può lasciare lo zaino?", zh:"可以寄存背包吗？", py:"kěyǐ jìcún bēibāo ma?"}
+  ],
+  7: [
+    {it:"Posso provare?", zh:"可以试一下吗？", py:"kěyǐ shì yíxià ma?"},
+    {it:"Mi fa lo sconto?", zh:"可以打折吗？", py:"kěyǐ dǎzhé ma?"},
+    {it:"Troppo caro!", zh:"太贵了！", py:"tài guì le!"},
+    {it:"Ultima offerta", zh:"最低价", py:"zuìdī jià"}
+  ],
+  8: [
+    {it:"Dov'è il check-in Hainan Airlines?", zh:"海南航空值机柜台在哪？", py:"Hǎinán Hángkōng zhíjī guìtái zài nǎ?"},
+    {it:"Bagaglio da imbarcare", zh:"托运行李", py:"tuōyùn xínglǐ"},
+    {it:"Dov'è il gate?", zh:"登机口在哪里？", py:"dēngjī kǒu zài nǎlǐ?"},
+    {it:"Ho un volo in coincidenza", zh:"我要转机", py:"wǒ yào zhuǎnjī"}
+  ],
+  9: [
+    {it:"Per Hongya Cave per favore", zh:"请去洪崖洞", py:"qǐng qù Hóngyádòng"},
+    {it:"Hotpot non piccante per me", zh:"我的火锅不要辣", py:"wǒ de huǒguō bú yào là"},
+    {it:"Doppio brodo, prego (ying-yang)", zh:"鸳鸯锅", py:"yuānyāng guō"},
+    {it:"Conto separato", zh:"分开结账", py:"fēnkāi jiézhàng"}
+  ],
+  10: [
+    {it:"Una specialità di Ciqikou", zh:"磁器口的特色", py:"Cíqìkǒu de tèsè"},
+    {it:"Vorrei prendere il battello sul fiume", zh:"我想坐两江游船", py:"wǒ xiǎng zuò liǎngjiāng yóuchuán"},
+    {it:"Qual è il punto panoramico migliore?", zh:"最好的观景台在哪里？", py:"zuì hǎo de guānjǐngtái zài nǎlǐ?"},
+    {it:"A che ora chiude la metro?", zh:"地铁几点关？", py:"dìtiě jǐ diǎn guān?"}
+  ],
+  11: [
+    {it:"Un tè di Chengdu, per favore", zh:"请来一杯成都茶", py:"qǐng lái yì bēi Chéngdū chá"},
+    {it:"Mi può fare la pulizia delle orecchie?", zh:"可以掏耳朵吗？", py:"kěyǐ tāo ěrduo ma?"},
+    {it:"Si può giocare a mahjong qui?", zh:"这里可以打麻将吗？", py:"zhèlǐ kěyǐ dǎ májiàng ma?"},
+    {it:"Dandan noodles, non troppo piccanti", zh:"担担面，不要太辣", py:"dāndān miàn, bú yào tài là"}
+  ],
+  12: [
+    {it:"Quando mangiano i panda?", zh:"熊猫几点吃饭？", py:"xióngmāo jǐ diǎn chīfàn?"},
+    {it:"Dove sono i piccoli panda?", zh:"小熊猫在哪里？", py:"xiǎo xióngmāo zài nǎlǐ?"},
+    {it:"Posso comprare un peluche?", zh:"我想买一个熊猫玩偶", py:"wǒ xiǎng mǎi yí ge xióngmāo wán'ǒu"},
+    {it:"È vietato dar da mangiare", zh:"禁止喂食", py:"jìnzhǐ wèishí"}
+  ],
+  13: [
+    {it:"Cabinovia o ascensore?", zh:"缆车还是电梯？", py:"lǎnchē háishì diàntī?"},
+    {it:"Quanto è ripido il sentiero?", zh:"路有多陡？", py:"lù yǒu duō dǒu?"},
+    {it:"Servono scarpe da trekking?", zh:"需要登山鞋吗？", py:"xūyào dēngshān xié ma?"},
+    {it:"Quando parte l'ultimo treno per Chongqing?", zh:"最后一班去重庆的火车几点？", py:"zuìhòu yì bān qù Chóngqìng de huǒchē jǐ diǎn?"}
+  ],
+  14: [
+    {it:"Per Yikeshu Viewing Deck", zh:"去一棵树观景台", py:"qù Yīkēshù guānjǐngtái"},
+    {it:"Quanti minuti a piedi?", zh:"走路要多久？", py:"zǒulù yào duō jiǔ?"},
+    {it:"Vista migliore al tramonto", zh:"日落最美", py:"rìluò zuì měi"},
+    {it:"Pollo della sorgente, per favore", zh:"泉水鸡，谢谢", py:"quánshuǐ jī, xièxie"}
+  ],
+  15: [
+    {it:"Per l'aeroporto di Jiangbei, T3", zh:"江北机场 T3", py:"Jiāngběi Jīchǎng T3"},
+    {it:"Imbarco internazionale", zh:"国际航班", py:"guójì hángbān"},
+    {it:"Dove sono i taxi?", zh:"出租车在哪里？", py:"chūzūchē zài nǎlǐ?"},
+    {it:"Addio Cina!", zh:"再见，中国！", py:"zàijiàn, Zhōngguó!"}
+  ],
+  16: [
+    {it:"Un caffè, per favore", zh:"一杯咖啡，谢谢", py:"yì bēi kāfēi, xièxie"},
+    {it:"Welcome home", zh:"欢迎回家", py:"huānyíng huí jiā"}
+  ]
+};
+
+function renderDailyPhrases(day){
+  const phrases = DAY_PHRASES[day.n] || [];
+  if(!phrases.length) return "";
+  return `
+    <div class="day-phrases">
+      <h4 class="day-phrases-head">📌 Frasi utili oggi · 今日用语</h4>
+      ${phrases.map(p=>`
+        <div class="day-phrase">
+          <div class="day-phrase-text">
+            <div class="day-phrase-it">${htmlEscape(p.it)}</div>
+            <div class="day-phrase-zh zh">${htmlEscape(p.zh)}</div>
+            <div class="day-phrase-py">${htmlEscape(p.py||"")}</div>
+          </div>
+          <button class="day-phrase-copy" onclick="copyText('${attrEscape(p.zh)}','Frase copiata')">Copia</button>
+        </div>
+      `).join("")}
+    </div>`;
 }
 
 // =============================================================
@@ -1770,9 +2967,11 @@ let pendingPhoto = null;  // data URL during form
 window.openStopForm = function(dayN, stopIdx){
   const day = DAYS.find(d=>d.n===dayN);
   const isNew = stopIdx === -1;
-  const stop = isNew ? {name:"", zh:"", py:"", desc:"", coords:[null, null]} : day.stops[stopIdx];
+  const stop = isNew ? {name:"", zh:"", py:"", desc:"", coords:[null, null], hours:"", duration:"", price:""} : day.stops[stopIdx];
   const pkey = isNew ? null : photoKey(dayN, stop.name);
   pendingPhoto = (!isNew && PHOTOS[pkey]) ? PHOTOS[pkey] : null;
+  const tkey = isNew ? null : ticketKey(dayN, stop.name);
+  const hasTicket = !isNew && TICKETS[tkey];
 
   const html = `
     <div class="sheet-handle"></div>
@@ -1793,7 +2992,21 @@ window.openStopForm = function(dayN, stopIdx){
     </div>
     <div class="form-field">
       <label>Descrizione</label>
-      <textarea id="f-desc" placeholder="Descrizione, orari, cosa fare…">${htmlEscape(stop.desc)}</textarea>
+      <textarea id="f-desc" placeholder="Descrizione, cosa fare…">${htmlEscape(stop.desc||"")}</textarea>
+    </div>
+    <div class="form-field-row">
+      <div class="form-field">
+        <label>Orari di apertura</label>
+        <input type="text" id="f-hours" value="${attrEscape(stop.hours||'')}" placeholder="es. 8:00 – 17:30">
+      </div>
+      <div class="form-field">
+        <label>Durata visita</label>
+        <input type="text" id="f-duration" value="${attrEscape(stop.duration||'')}" placeholder="es. 1h 30">
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Prezzo biglietto</label>
+      <input type="text" id="f-price" value="${attrEscape(stop.price||'')}" placeholder="es. 50 ¥">
     </div>
     <div class="form-field-row">
       <div class="form-field">
@@ -1818,6 +3031,20 @@ window.openStopForm = function(dayN, stopIdx){
         ${pendingPhoto?`<button class="btn btn-danger" onclick="removePhoto()">Rimuovi foto</button>`:''}
       </div>
     </div>
+
+    ${!isNew?`
+    <div class="form-field">
+      <label>Biglietto / QR code (opzionale)</label>
+      <p style="font-size:11.5px;color:var(--ink-faint);margin:0 0 6px;font-style:italic">Allega foto del biglietto o QR. Si visualizza a tutto schermo per scansione al gate.</p>
+      <div class="form-photo-buttons">
+        <label class="btn btn-ticket" style="cursor:pointer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v2a2 2 0 100 4v2a3 3 0 01-3 3H5a3 3 0 01-3-3v-2a2 2 0 100-4V9z"/></svg>
+          ${hasTicket?'Sostituisci biglietto':'Allega biglietto'}
+          <input type="file" accept="image/*" style="display:none" onchange="uploadTicketFor(${dayN}, '${jsEnc(stop.name)}', this); closeSheet();">
+        </label>
+        ${hasTicket?`<button class="btn btn-danger" onclick="removeTicketFor(${dayN}, '${jsEnc(stop.name)}'); closeSheet();">Rimuovi</button>`:''}
+      </div>
+    </div>` : ''}
 
     <div class="sheet-actions" style="margin-top:18px">
       <button class="sheet-btn sheet-btn-primary" onclick="saveStopForm(${dayN}, ${stopIdx})">
@@ -1885,12 +3112,15 @@ function resizeImage(file){
   });
 }
 
-window.saveStopForm = function(dayN, stopIdx){
+window.saveStopForm = async function(dayN, stopIdx){
   const name = $("f-name").value.trim();
   if(!name){ showToast("Il nome è obbligatorio"); return; }
   const zh = $("f-zh").value.trim();
   const py = $("f-py").value.trim();
   const desc = $("f-desc").value.trim();
+  const hours = ($("f-hours") ? $("f-hours").value : "").trim();
+  const duration = ($("f-duration") ? $("f-duration").value : "").trim();
+  const price = ($("f-price") ? $("f-price").value : "").trim();
   const latRaw = $("f-lat").value, lngRaw = $("f-lng").value;
   const lat = latRaw === "" ? null : parseFloat(latRaw);
   const lng = lngRaw === "" ? null : parseFloat(lngRaw);
@@ -1899,18 +3129,22 @@ window.saveStopForm = function(dayN, stopIdx){
   const day = DAYS.find(d=>d.n===dayN);
   const newStop = {name, zh, py, desc};
   if(coords) newStop.coords = coords;
+  if(hours) newStop.hours = hours;
+  if(duration) newStop.duration = duration;
+  if(price) newStop.price = price;
 
   if(stopIdx === -1){
     day.stops.push(newStop);
   }else{
-    // delete old photo if name changed
+    // delete old photo/ticket/visited keys if name changed (migrate them)
     const oldName = day.stops[stopIdx].name;
     if(oldName !== name){
-      const oldKey = photoKey(dayN, oldName);
-      if(PHOTOS[oldKey]){
-        PHOTOS[photoKey(dayN, name)] = PHOTOS[oldKey];
-        delete PHOTOS[oldKey];
-      }
+      const oldPK = photoKey(dayN, oldName);
+      if(PHOTOS[oldPK]){ PHOTOS[photoKey(dayN, name)] = PHOTOS[oldPK]; delete PHOTOS[oldPK]; }
+      const oldTK = ticketKey(dayN, oldName);
+      if(TICKETS[oldTK]){ TICKETS[ticketKey(dayN, name)] = TICKETS[oldTK]; delete TICKETS[oldTK]; persistTickets(); }
+      const oldVK = visitedKey(dayN, oldName);
+      if(VISITED[oldVK]){ VISITED[visitedKey(dayN, name)] = VISITED[oldVK]; delete VISITED[oldVK]; persistVisited(); }
     }
     day.stops[stopIdx] = newStop;
   }
@@ -1918,8 +3152,23 @@ window.saveStopForm = function(dayN, stopIdx){
   // save photo
   const pkey = photoKey(dayN, name);
   if(pendingPhoto){
-    PHOTOS[pkey] = pendingPhoto;
+    let photoValue = pendingPhoto;
+    // If logged in and photo is a data URL (newly added), upload to Storage and store URL instead
+    if(_user && typeof pendingPhoto === "string" && pendingPhoto.startsWith("data:")){
+      showToast("Carico foto sul cloud…");
+      const url = await uploadPhotoToCloud(pendingPhoto);
+      if(url){
+        photoValue = url;
+      }
+      // If upload failed, fall back to base64 (still works locally)
+    }
+    PHOTOS[pkey] = photoValue;
   }else{
+    // If we're removing a photo that was on the cloud, clean up
+    const old = PHOTOS[pkey];
+    if(_user && old && typeof old === "string" && old.startsWith("http")){
+      deletePhotoFromCloud(old);
+    }
     delete PHOTOS[pkey];
   }
 
@@ -1961,6 +3210,65 @@ window.moveStop = function(dayN, stopIdx, dir){
   [day.stops[stopIdx], day.stops[ni]] = [day.stops[ni], day.stops[stopIdx]];
   persistDays();
   showDay(dayN);
+};
+
+window.openMoveToDay = function(fromDayN, stopIdx){
+  const fromDay = DAYS.find(d=>d.n===fromDayN);
+  const stop = fromDay.stops[stopIdx];
+  const html = `
+    <div class="sheet-handle"></div>
+    <div class="sheet-eyebrow">Sposta tappa</div>
+    <h3 class="sheet-title">${htmlEscape(stop.name)}</h3>
+    <p style="font-size:13px;color:var(--ink-soft);margin:0 0 12px;line-height:1.5">In quale giornata vuoi spostare questa tappa? Foto, biglietto e stato visitato la seguono.</p>
+    <div class="day-picker">
+      ${DAYS.map(d=>{
+        const isCurrent = d.n === fromDayN;
+        const dateOnly = d.dayLabel.split(" ").slice(1,3).join(" ");
+        return `
+        <button class="day-pick ${isCurrent?'current':''}"
+          ${isCurrent?'disabled':''}
+          onclick="moveStopAcross(${fromDayN}, ${stopIdx}, ${d.n})">
+          <div class="day-pick-num">${d.n}</div>
+          <div class="day-pick-text">
+            <b>${htmlEscape(dateOnly)} · ${htmlEscape(d.city)}</b>
+            <small>${htmlEscape(d.title)}</small>
+          </div>
+          ${isCurrent?'<span class="day-pick-current-tag">qui ora</span>':''}
+        </button>`;
+      }).join("")}
+    </div>
+    <button class="sheet-close" onclick="closeSheet()">Annulla</button>
+  `;
+  showSheet(html);
+};
+
+window.moveStopAcross = function(fromDayN, stopIdx, toDayN){
+  if(fromDayN === toDayN) return;
+  const fromDay = DAYS.find(d=>d.n===fromDayN);
+  const toDay   = DAYS.find(d=>d.n===toDayN);
+  if(!fromDay || !toDay) return;
+  const stop = fromDay.stops[stopIdx];
+  if(!stop) return;
+  const stopName = stop.name;
+
+  // Move stop object
+  fromDay.stops.splice(stopIdx, 1);
+  toDay.stops.push(stop);
+  persistDays();
+
+  // Migrate associated state (photos / tickets / visited): keys are dayN::stopName
+  const oldPK = photoKey(fromDayN, stopName), newPK = photoKey(toDayN, stopName);
+  if(PHOTOS[oldPK]){ PHOTOS[newPK] = PHOTOS[oldPK]; delete PHOTOS[oldPK]; persistPhotos(); }
+
+  const oldTK = ticketKey(fromDayN, stopName), newTK = ticketKey(toDayN, stopName);
+  if(TICKETS[oldTK]){ TICKETS[newTK] = TICKETS[oldTK]; delete TICKETS[oldTK]; persistTickets(); }
+
+  const oldVK = visitedKey(fromDayN, stopName), newVK = visitedKey(toDayN, stopName);
+  if(VISITED[oldVK]){ VISITED[newVK] = VISITED[oldVK]; delete VISITED[oldVK]; persistVisited(); }
+
+  closeSheet();
+  showDay(fromDayN);
+  showToast(`Spostata al Giorno ${toDayN}`);
 };
 
 window.resetDay = function(dayN){
@@ -2253,46 +3561,33 @@ function renderHome(){
     sub.textContent = "in viaggio";
   }
 
-  // Calendar grid (4×4 on mobile, 8×2 on wider)
-  const cal = $("calendar");
-  cal.innerHTML = DAYS.map(d=>{
-    const dd = dateOf(d.date);
-    let cls = "cal-cell " + cityClass(d);
-    const isToday = dd.getTime() === TODAY.getTime();
-    if(isToday) cls += " today";
-    else if(dd < TODAY) cls += " past";
-    const shortDate = d.dayLabel.split(" ").slice(1,3).join(" ");  // "13 agosto"
-    const shortCity = d.city.split(" → ")[0].slice(0,9);
-    const shortZh = d.cityZh.split(" → ")[0];
-    return `
-      <div class="${cls}" onclick="showDay(${d.n})">
-        ${isToday?'<div class="cal-today-pill"></div>':''}
-        <div>
-          <div class="cal-num">${d.n}</div>
-          <div class="cal-meta">${shortDate}</div>
-        </div>
-        <div>
-          <div class="cal-city">${shortCity}</div>
-          <div class="cal-zh zh">${shortZh}</div>
-        </div>
-      </div>`;
-  }).join("");
-
+  // Day cards (each with a hero banner)
   const list = $("day-list");
   list.innerHTML = DAYS.map(d=>{
     const dd = dateOf(d.date);
     let cls = "day-card";
-    if(dd.getTime() === TODAY.getTime()) cls += " today";
+    const isToday = dd.getTime() === TODAY.getTime();
+    if(isToday) cls += " today";
     else if(dd < TODAY) cls += " past";
+    const hero = getHeroPhoto(d.n);
+    const cc = cityClass(d);
+    const heroStyle = hero ? `background-image:url('${attrEscape(hero)}')` : "";
+    const heroCls = "day-hero " + cc + (hero ? " has-photo" : "");
     return `
       <div class="${cls}" onclick="showDay(${d.n})">
-        <div class="day-num">${d.n}</div>
-        <div class="day-info">
-          <div class="day-date">${d.dayLabel}${dd.getTime()===TODAY.getTime()?'<span class="today-pill">oggi</span>':''}</div>
-          <div class="day-title">${htmlEscape(d.title)}</div>
-          <div class="day-city">${htmlEscape(d.city)} · <span class="zh">${htmlEscape(d.cityZh)}</span></div>
+        <div class="${heroCls}" style="${heroStyle}">
+          <span class="day-hero-watermark zh">${cityChar(d)}</span>
+          <div class="day-hero-num">${d.n}<small>giorno</small></div>
+          ${isToday?'<span class="day-hero-today">oggi</span>':''}
         </div>
-        <div class="day-arrow">→</div>
+        <div class="day-info">
+          <div class="day-info-text">
+            <div class="day-date">${htmlEscape(d.dayLabel)}</div>
+            <div class="day-title">${htmlEscape(d.title)}</div>
+            <div class="day-city">${htmlEscape(d.city)}<span class="zh">${htmlEscape(d.cityZh)}</span></div>
+          </div>
+          <div class="day-arrow">→</div>
+        </div>
       </div>`;
   }).join("");
 }
@@ -2309,6 +3604,8 @@ window.showDay = function(n){
       <div class="detail-summary">${htmlEscape(d.summary)}</div>
     </div>
 
+    <div id="weather-${n}" class="weather-strip" style="display:none"></div>
+
     ${renderMap(d.stops)}
 
     <div class="edit-toolbar">
@@ -2321,6 +3618,8 @@ window.showDay = function(n){
       </div>
     </div>
 
+    ${editMode ? renderHeroEditor(n) : ''}
+
     <div class="stops">
       ${d.stops.map((s,i)=>renderStop(s, i+1, n, i, d.stops.length)).join("")}
       ${editMode ? `
@@ -2329,6 +3628,10 @@ window.showDay = function(n){
           Aggiungi una tappa al Giorno ${n}
         </button>` : ''}
     </div>
+
+    ${renderDailyPhrases(d)}
+    ${renderExpenses(n)}
+    ${renderSteps(n)}
 
     ${(d.info||[]).map(b=>`
       <div class="info-box">
@@ -2339,19 +3642,36 @@ window.showDay = function(n){
   `;
   $("day-detail").innerHTML = html;
   showView("day");
+  // Async weather fetch (shows strip when ready)
+  if(d.stops.find(s => s.coords && s.coords.length===2)){
+    const wEl = document.getElementById(`weather-${n}`);
+    if(wEl) wEl.style.display = "flex";
+    renderWeatherInto(`weather-${n}`, n, d);
+  }
 };
 
 function renderStop(s, n, dayN, stopIdx, total){
   const hasCoords = s.coords && Array.isArray(s.coords) && s.coords.length === 2 && s.coords[0] && s.coords[1];
   const payload = hasCoords ? placePayload(s.name, s.zh||"", s.py||"", s.coords[0], s.coords[1]) : null;
   const photoUrl = PHOTOS[photoKey(dayN, s.name)] || null;
-  const cls = "stop" + (photoUrl ? " has-photo" : "");
+  const isVisited = !!VISITED[visitedKey(dayN, s.name)];
+  const ticketUrl = TICKETS[ticketKey(dayN, s.name)] || null;
+  const cls = "stop" + (photoUrl ? " has-photo" : "") + (isVisited ? " is-visited" : "");
 
   const photoHtml = photoUrl ? `
     <div class="stop-photo">
       <img src="${photoUrl}" alt="${attrEscape(s.name)}">
       ${editMode?`<button class="stop-photo-remove" onclick="event.stopPropagation(); openStopForm(${dayN}, ${stopIdx})" title="Modifica/rimuovi foto">✎</button>`:''}
     </div>` : '';
+
+  const stamp = isVisited ? `<div class="visited-stamp">印</div>` : '';
+
+  // Practical badges
+  const badges = [];
+  if(s.hours)    badges.push(`<span class="stop-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg><b>Orari</b> ${htmlEscape(s.hours)}</span>`);
+  if(s.duration) badges.push(`<span class="stop-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg><b>Durata</b> ${htmlEscape(s.duration)}</span>`);
+  if(s.price)    badges.push(`<span class="stop-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg><b>Prezzo</b> ${htmlEscape(s.price)}</span>`);
+  const badgesHtml = badges.length ? `<div class="stop-badges">${badges.join("")}</div>` : "";
 
   const editRow = editMode ? `
     <div class="stop-edit-row">
@@ -2360,6 +3680,9 @@ function renderStop(s, n, dayN, stopIdx, total){
       </button>
       <button class="icon-btn" onclick="moveStop(${dayN}, ${stopIdx}, 1)" ${stopIdx===total-1?'disabled':''} title="Sposta giù">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="icon-btn" onclick="openMoveToDay(${dayN}, ${stopIdx})" title="Sposta ad altro giorno">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="5" width="12" height="14" rx="2"/><line x1="13" y1="3" x2="13" y2="7"/><line x1="17" y1="3" x2="17" y2="7"/><path d="M3 12h6m0 0l-3-3m3 3l-3 3"/></svg>
       </button>
       <button class="icon-btn" onclick="openStopForm(${dayN}, ${stopIdx})" title="Modifica">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -2372,10 +3695,12 @@ function renderStop(s, n, dayN, stopIdx, total){
   return `
     <div class="${cls}" data-stop-idx="${stopIdx}">
       ${photoHtml}
+      ${stamp}
       <div class="stop-num">${n}</div>
       <div class="stop-body">
         <h3 class="stop-name">${htmlEscape(s.name)}</h3>
         ${s.zh?`<div class="stop-zh zh">${htmlEscape(s.zh)}${s.py?`<span class="pinyin">${htmlEscape(s.py)}</span>`:""}</div>`:""}
+        ${badgesHtml}
         ${s.desc?`<p class="stop-desc">${htmlEscape(s.desc)}</p>`:""}
         <div class="stop-actions">
           ${hasCoords?`<button class="btn" onclick="openPlace('${payload}')">
@@ -2386,9 +3711,17 @@ function renderStop(s, n, dayN, stopIdx, total){
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
             Copia 中文
           </button>`:""}
-          ${editMode && !photoUrl?`<button class="btn btn-gold" onclick="openStopForm(${dayN}, ${stopIdx})">
+          <button class="visited-toggle ${isVisited?'is-visited':''}" onclick="toggleVisited(${dayN}, '${jsEnc(s.name)}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="20 6 9 17 4 12"/></svg>
+            ${isVisited?'Visitato':'Marca visitato'}
+          </button>
+          ${ticketUrl?`<button class="btn btn-ticket" onclick="showTicket('${jsEnc(ticketKey(dayN, s.name))}','${jsEnc(s.name)}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v2a2 2 0 100 4v2a3 3 0 01-3 3H5a3 3 0 01-3-3v-2a2 2 0 100-4V9z"/><line x1="13" y1="5" x2="13" y2="19" stroke-dasharray="2 2"/></svg>
+            Biglietto
+          </button>`:""}
+          ${editMode?`<button class="btn btn-gold" onclick="openStopForm(${dayN}, ${stopIdx})">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-7 7"/></svg>
-            Aggiungi foto
+            Modifica
           </button>`:""}
         </div>
         ${editRow}
@@ -2474,6 +3807,12 @@ function renderPractical(){
 renderHome();
 renderPhrases();
 renderPractical();
+bootstrapAuth();
+// Refresh currency rate in background
+refreshRateIfStale().then(r => {
+  const el = document.getElementById("currency-rate");
+  if(el) el.textContent = r.eurPerCny.toFixed(2);
+});
 </script>
 </body>
 </html>
