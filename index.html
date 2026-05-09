@@ -2783,8 +2783,11 @@ function requireAdmin(action){
 }
 
 async function checkAdminStatus(){
-  IS_ADMIN = false;
-  if(!_user) return false;
+  // We don't reset IS_ADMIN to false here — we only reset it when we're SURE
+  // the user is not admin (no _user, RPC returns false, or RPC fails).
+  // Resetting before the RPC call would create a vulnerability window during
+  // which clicks would be rejected even for legitimate admins.
+  if(!_user){ IS_ADMIN = false; return false; }
   try{
     const sb = await ensureSupabase();
     const { data, error } = await sb.rpc("is_trip_admin");
@@ -2792,7 +2795,8 @@ async function checkAdminStatus(){
     IS_ADMIN = !!data;
   }catch(e){
     console.warn("checkAdminStatus:", e);
-    IS_ADMIN = false;
+    // On network/server error, keep the previous IS_ADMIN value rather than
+    // demoting a known admin. The next successful check will correct it.
   }
   return IS_ADMIN;
 }
@@ -2808,11 +2812,18 @@ async function bootstrapAuth(){
     await pullFromCloud();
     updateAuthUiLabel();
 
-    sb.auth.onAuthStateChange(async (_event, session)=>{
+    sb.auth.onAuthStateChange(async (event, session)=>{
+      // TOKEN_REFRESHED fires automatically every hour or so; the user's identity
+      // hasn't actually changed, so we should NOT re-run checkAdminStatus (which
+      // would briefly clear IS_ADMIN if the RPC fails) and we should NOT pull
+      // again from cloud. Just update internal state quietly.
+      if(event === "TOKEN_REFRESHED"){
+        _user = session ? session.user : null;
+        return;
+      }
       _user = session ? session.user : null;
       await checkAdminStatus();
       await pullFromCloud();
-      await checkAdminStatus();
       if(currentDay !== null) showDay(currentDay); else renderHome();
       updateAuthUiLabel();
     });
@@ -2903,7 +2914,6 @@ window.signInWithPassword = async function(){
     _user = data.user;
     await checkAdminStatus();
     await pullFromCloud();
-    await checkAdminStatus();
     updateAuthUiLabel();
     closeSheet();
     if(currentDay !== null) showDay(currentDay); else renderHome();
