@@ -1059,15 +1059,15 @@ section.active{display:block;animation:fade .35s ease}
 
 /* === ADMIN: stop command strip (always visible to admins, big tap targets) === */
 .stop-admin-strip{
-  display:grid;grid-template-columns:repeat(4, 1fr);gap:6px;
+  display:grid;grid-template-columns:repeat(5, 1fr);gap:5px;
   padding-top:12px;margin-top:10px;
   border-top:1px dashed rgba(139,26,26,.18);
 }
 .stop-admin-btn{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:4px;padding:10px 4px;
+  gap:4px;padding:9px 3px;
   background:#fff;border:1.5px solid rgba(139,26,26,.15);border-radius:10px;
-  font-family:inherit;font-size:11.5px;font-weight:600;
+  font-family:inherit;font-size:11px;font-weight:600;
   color:var(--red);cursor:pointer;
   min-height:54px;
   transition:transform .12s, background .15s, border-color .15s;
@@ -1076,8 +1076,8 @@ section.active{display:block;animation:fade .35s ease}
 .stop-admin-btn:active{transform:scale(.96)}
 .stop-admin-btn:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 .stop-admin-btn:disabled{opacity:.35;cursor:not-allowed;background:var(--paper-warm)}
-.stop-admin-btn svg{width:18px;height:18px;stroke-width:2.2}
-.stop-admin-btn span{letter-spacing:.04em;line-height:1}
+.stop-admin-btn svg{width:17px;height:17px;stroke-width:2.2}
+.stop-admin-btn span{letter-spacing:.01em;line-height:1.15;text-align:center}
 .stop-admin-btn-danger{color:var(--red);border-color:rgba(139,26,26,.25)}
 .stop-admin-btn-danger:hover{background:rgba(139,26,26,.08);border-color:var(--red)}
 
@@ -5358,6 +5358,10 @@ function renderStop(s, n, dayN, stopIdx, total){
       <button class="stop-admin-btn" onclick="moveStop(${dayN}, ${stopIdx}, 1)" ${stopIdx===total-1?'disabled':''} aria-label="Sposta tappa giù">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
         <span>Giù</span>
+      </button>
+      <button class="stop-admin-btn" onclick="openMoveToDay(${dayN}, ${stopIdx})" aria-label="Sposta tappa in un altro giorno">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M14 14l3 3-3 3M17 17H8"/></svg>
+        <span>Sposta<br>giorno</span>
       </button>
     </div>` : '';
 
