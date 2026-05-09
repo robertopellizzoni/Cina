@@ -709,10 +709,55 @@ body{
   border-bottom:1px solid rgba(139,26,26,.12);
   padding:14px 20px 12px;padding-top:calc(14px + env(safe-area-inset-top));
 }
-.appbar-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.appbar-title{font-family:"Noto Serif CJK SC","Songti SC",ui-serif,Georgia,serif;font-size:18px;font-weight:600;color:var(--red);letter-spacing:.01em}
-.appbar-zh{font-size:13px;color:var(--ink-faint);letter-spacing:.15em}
-.appbar-sub{font-size:12px;color:var(--ink-faint);margin-top:2px;font-variant:small-caps;letter-spacing:.08em}
+.appbar-titleblock{
+  text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding-bottom:4px;
+}
+.appbar-title{
+  font-family:"Noto Serif CJK SC","Songti SC",ui-serif,Georgia,serif;
+  font-size:24px;font-weight:700;color:var(--red);letter-spacing:.01em;
+  margin:0;line-height:1.1;
+}
+.appbar-title-zh{
+  font-size:14px;color:var(--gold);letter-spacing:.18em;font-weight:500;
+  margin-top:2px;
+}
+.appbar-sub{
+  font-size:11px;color:var(--ink-soft);margin-top:3px;
+  font-variant:small-caps;letter-spacing:.1em;
+}
+
+/* Today banner — date + dual clocks */
+.today-banner{
+  margin-top:10px;padding:10px 14px;
+  background:linear-gradient(135deg, rgba(139,26,26,.05), rgba(163,123,42,.05));
+  border:1px solid rgba(139,26,26,.12);border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.today-date-row{
+  display:flex;align-items:baseline;gap:8px;
+  font-family:"Noto Serif CJK SC","Songti SC",ui-serif,Georgia,serif;
+  color:var(--red);
+}
+.today-weekday{
+  font-size:18px;font-weight:600;text-transform:capitalize;line-height:1;
+}
+.today-date-sep{color:var(--ink-faint);font-size:14px}
+.today-date{font-size:15px;font-weight:500;color:var(--ink);line-height:1}
+.today-clocks{
+  display:flex;align-items:center;gap:14px;
+  font-family:ui-monospace,"SF Mono",monospace;
+}
+.today-clock{display:flex;align-items:baseline;gap:6px}
+.today-clock-label{
+  font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.12em;
+  font-family:inherit;font-weight:600;
+}
+.today-clock-time{
+  font-size:15px;font-weight:600;color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+.today-clock-sep{color:var(--ink-faint);font-size:14px}
 
 main{padding:0 18px;max-width:760px;margin:0 auto}
 section{padding:18px 0;display:none}
@@ -731,9 +776,7 @@ section.active{display:block;animation:fade .35s ease}
 }
 .hero-eyebrow{font-size:11px;letter-spacing:.25em;text-transform:uppercase;opacity:.75;margin-bottom:10px}
 .hero-title{font-family:"Noto Serif CJK SC","Songti SC",ui-serif,Georgia,serif;font-size:30px;font-weight:600;line-height:1.15;margin:0 0 4px}
-.hero-zh{font-size:22px;opacity:.85;margin-bottom:14px;letter-spacing:.04em}
-.hero-meta{display:flex;gap:18px;font-size:13px;opacity:.9;flex-wrap:wrap}
-.hero-meta b{display:block;font-size:18px;font-weight:600;margin-bottom:2px;font-family:ui-serif,Georgia,serif}
+.hero-zh{font-size:22px;opacity:.85;margin-bottom:6px;letter-spacing:.04em}
 .countdown{margin-top:14px;padding:12px 14px;background:rgba(246,239,225,.12);border-radius:10px;font-size:13px;display:flex;align-items:center;gap:10px}
 .countdown-num{font-size:24px;font-weight:700;font-family:ui-serif,Georgia,serif}
 
@@ -1015,12 +1058,482 @@ section.active{display:block;animation:fade .35s ease}
   background:linear-gradient(0deg, rgba(246,239,225,.99), rgba(246,239,225,.96));
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-top:1px solid rgba(139,26,26,.15);
-  padding:8px 0 calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:space-around;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  display:flex;justify-content:space-around;gap:2px;
 }
-.tab{flex:1;background:none;border:none;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--ink-faint);font-family:inherit;font-size:10px;cursor:pointer;letter-spacing:.05em;transition:color .15s}
+.tab{
+  flex:1;background:none;border:none;padding:8px 4px 6px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  color:var(--ink-soft);font-family:inherit;cursor:pointer;
+  letter-spacing:.04em;transition:color .15s, transform .12s;
+  min-height:60px;border-radius:10px;
+}
+.tab:hover{color:var(--red)}
+.tab:active{transform:scale(.96)}
+.tab:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 .tab.active{color:var(--red)}
-.tab-icon{font-size:20px;line-height:1;font-family:"Noto Serif CJK SC","Songti SC",serif}
-.tab-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em}
+.tab-icon-wrap{
+  position:relative;width:28px;height:28px;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.tab-icon-svg{width:24px;height:24px;stroke-width:2;}
+.tab.active .tab-icon-svg{stroke-width:2.4}
+.tab-icon-cn{
+  position:absolute;right:-6px;top:-4px;
+  font-size:11px;color:var(--gold);opacity:.7;
+  background:var(--paper);border-radius:50%;
+  width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;
+  line-height:1;font-weight:600;
+}
+.tab.active .tab-icon-cn{opacity:1}
+.tab-label{
+  font-size:10.5px;font-weight:600;letter-spacing:.06em;line-height:1.2;
+  text-align:center;
+}
+
+/* Account tab — uses avatar instead of generic icon */
+.tab-account .tab-avatar{
+  position:relative;width:28px;height:28px;border-radius:50%;
+  background:var(--ink-faint);
+  display:inline-flex;align-items:center;justify-content:center;
+  color:#fff;transition:background .2s;
+}
+.tab-account .tab-avatar.offline{background:var(--red)}
+.tab-account .tab-avatar.synced{background:var(--jade)}
+.tab-account .tab-avatar.syncing{background:var(--gold)}
+.tab-avatar-icon{width:18px;height:18px;stroke-width:2.2}
+.tab-avatar-dot{
+  position:absolute;right:-1px;bottom:-1px;
+  width:9px;height:9px;border-radius:50%;
+  background:#fff;border:2px solid var(--paper);
+}
+.tab-account .tab-avatar.synced .tab-avatar-dot{background:#7bc7a3}
+.tab-account .tab-avatar.syncing .tab-avatar-dot{background:#ffd28a;animation:pulse 1.4s infinite}
+.tab-account .tab-avatar.offline .tab-avatar-dot{background:#fff}
+
+/* Utilities bottom sheet — large WeChat-style cards */
+.utilities-grid{
+  display:flex;flex-direction:column;gap:10px;margin-top:6px;
+}
+.utility-card{
+  background:#fff;border:1px solid rgba(139,26,26,.10);border-radius:14px;
+  padding:16px 18px;cursor:pointer;
+  display:flex;align-items:center;gap:14px;
+  transition:transform .12s, box-shadow .15s, border-color .15s;
+  font-family:inherit;width:100%;text-align:left;
+  box-shadow:0 1px 3px rgba(139,26,26,.05);
+}
+.utility-card:hover{
+  border-color:rgba(139,26,26,.25);
+  box-shadow:0 4px 12px rgba(139,26,26,.10);
+}
+.utility-card:active{transform:scale(.98)}
+.utility-card-icon{
+  flex-shrink:0;width:48px;height:48px;border-radius:12px;
+  background:linear-gradient(135deg, rgba(139,26,26,.08), rgba(163,123,42,.08));
+  display:inline-flex;align-items:center;justify-content:center;
+  color:var(--red);
+}
+.utility-card-icon svg{width:26px;height:26px;stroke-width:2}
+.utility-card-text{flex:1;min-width:0}
+.utility-card-title{
+  font-family:"Noto Serif CJK SC","Songti SC",ui-serif,Georgia,serif;
+  font-size:16px;font-weight:600;color:var(--ink);margin-bottom:2px;
+  display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+}
+.utility-card-title-zh{
+  font-family:"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;
+  font-size:13px;color:var(--gold);font-weight:500;letter-spacing:.05em;
+}
+.utility-card-desc{font-size:12.5px;color:var(--ink-soft);line-height:1.45}
+.utility-card-arrow{flex-shrink:0;color:var(--ink-faint)}
+
+/* Currency converter — rate card */
+.conv-rate-card{
+  background:linear-gradient(135deg, rgba(163,123,42,.10), rgba(139,26,26,.04));
+  border:1px solid rgba(163,123,42,.25);border-radius:12px;
+  padding:14px 16px;margin:6px 0 16px;
+  text-align:center;
+}
+.conv-rate-main{
+  font-family:ui-monospace,"SF Mono",monospace;
+  font-size:22px;font-weight:700;color:var(--ink);letter-spacing:.01em;
+}
+.conv-rate-meta{
+  font-size:11.5px;color:var(--ink-soft);margin-top:4px;letter-spacing:.02em;
+}
+
+/* Editor select (used in expense form day picker) */
+.editor-select{
+  width:100%;padding:11px 14px;
+  background:var(--paper);border:1.5px solid rgba(139,26,26,.18);
+  border-radius:10px;font-family:inherit;font-size:14px;color:var(--ink);
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%238B1A1A' stroke-width='2'><polyline points='1 1 6 6 11 1'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center;
+  padding-right:38px;
+}
+.editor-select:focus{outline:2px solid var(--gold);outline-offset:2px}
+
+/* === BIG CHINESE CARD (popup-style, used by Taxi & Phrasebook) === */
+.bigcn-italian{
+  font-family:"Noto Serif CJK SC","Songti SC",ui-serif,Georgia,serif;
+  font-size:16px;color:var(--ink-soft);text-align:center;
+  font-style:italic;line-height:1.3;
+  padding:0 6px;
+}
+.bigcn-card{
+  background:linear-gradient(180deg, #fff, var(--paper-warm));
+  border:3px solid var(--red);border-radius:18px;
+  padding:32px 24px;text-align:center;
+  box-shadow:0 8px 24px rgba(139,26,26,.18);
+}
+.bigcn-zh{
+  font-family:"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;
+  font-size:48px;font-weight:700;color:var(--ink);line-height:1.2;
+  letter-spacing:.02em;
+}
+.bigcn-addr{
+  font-family:"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;
+  font-size:24px;color:var(--ink-soft);margin-top:14px;line-height:1.3;
+}
+.bigcn-py{
+  font-style:italic;color:var(--gold);font-size:16px;margin-top:16px;
+  letter-spacing:.02em;font-weight:500;
+}
+.bigcn-coords{
+  font-family:ui-monospace,"SF Mono",monospace;
+  font-size:13px;color:var(--ink-faint);margin-top:14px;
+  padding-top:12px;border-top:1px dashed rgba(0,0,0,.12);
+}
+.bigcn-hint{
+  font-size:13px;color:var(--ink-soft);text-align:center;font-style:italic;
+  margin:0 6px;line-height:1.4;
+}
+
+/* === WEATHER DETAIL (full-screen, vertical 7-day list, big rows) === */
+.weather-loading-big{
+  text-align:center;padding:40px 20px;
+  font-style:italic;color:var(--ink-faint);font-size:15px;
+}
+.weather-fallback-big{
+  text-align:center;padding:30px 20px;
+  background:#fff;border:1px solid rgba(139,26,26,.12);
+  border-radius:16px;
+}
+.weather-fallback-emoji{font-size:48px;margin-bottom:10px}
+.weather-fallback-big h3{
+  font-family:"Noto Serif CJK SC","Songti SC",serif;
+  font-size:18px;color:var(--red);margin:0 0 10px;font-weight:600;
+}
+.weather-fallback-big p{
+  margin:0 0 16px;font-size:14px;color:var(--ink-soft);line-height:1.5;
+}
+.weather-fallback-stat{
+  background:linear-gradient(135deg, rgba(139,26,26,.08), rgba(163,123,42,.06));
+  border-radius:12px;padding:14px;margin:14px 0;
+}
+.weather-fallback-stat-label{
+  display:block;font-size:11px;color:var(--ink-faint);
+  letter-spacing:.18em;text-transform:uppercase;font-weight:600;
+}
+.weather-fallback-stat-val{
+  display:block;font-family:ui-monospace,"SF Mono",monospace;
+  font-size:24px;font-weight:700;color:var(--red);margin-top:4px;
+}
+.weather-fallback-desc{
+  font-style:italic;font-size:13px;
+}
+
+.weather-big-list{
+  display:flex;flex-direction:column;gap:10px;
+}
+.weather-big-row{
+  display:grid;grid-template-columns:auto 1fr auto;
+  gap:14px;align-items:center;
+  background:#fff;border:1px solid rgba(139,26,26,.10);border-radius:14px;
+  padding:14px 16px;
+  box-shadow:0 1px 3px rgba(139,26,26,.04);
+}
+.weather-big-row.is-today{
+  background:linear-gradient(135deg, rgba(139,26,26,.06), rgba(163,123,42,.05));
+  border-color:rgba(139,26,26,.25);
+  border-width:2px;
+}
+.weather-big-when{display:flex;flex-direction:column;gap:2px;min-width:90px}
+.weather-big-wd{
+  font-family:"Noto Serif CJK SC","Songti SC",serif;
+  font-size:16px;font-weight:600;color:var(--ink);text-transform:capitalize;
+  line-height:1.1;
+}
+.weather-big-row.is-today .weather-big-wd{color:var(--red);font-weight:700}
+.weather-big-dm{
+  font-size:12px;color:var(--ink-faint);text-transform:lowercase;
+}
+.weather-big-mid{
+  display:flex;align-items:center;gap:12px;min-width:0;
+}
+.weather-big-icon{font-size:36px;line-height:1;flex-shrink:0}
+.weather-big-desc{
+  font-size:14px;font-weight:500;color:var(--ink);line-height:1.3;
+}
+.weather-big-rain{
+  display:block;font-size:12px;color:var(--gold);font-weight:600;
+  margin-top:2px;
+}
+.weather-big-temp{
+  display:flex;flex-direction:column;align-items:flex-end;gap:0;
+  font-family:ui-monospace,"SF Mono",monospace;font-variant-numeric:tabular-nums;
+}
+.weather-big-tmax{
+  font-size:24px;font-weight:700;color:var(--red);line-height:1;
+}
+.weather-big-tmin{
+  font-size:14px;font-weight:500;color:var(--ink-faint);margin-top:2px;
+}
+
+/* === TRANSLATOR === */
+.translator-direction{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;
+  background:var(--paper-warm);border-radius:14px;padding:5px;
+  border:1px solid rgba(139,26,26,.10);
+}
+.translator-dir-btn{
+  background:none;border:none;
+  padding:11px 8px;border-radius:10px;
+  font-family:inherit;font-size:13.5px;font-weight:600;
+  color:var(--ink-soft);cursor:pointer;
+  transition:background .15s, color .15s, box-shadow .15s;
+  min-height:42px;line-height:1.2;
+}
+.translator-dir-btn.active{
+  background:#fff;color:var(--red);
+  box-shadow:0 1px 3px rgba(139,26,26,.10);
+}
+.translator-dir-btn:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+
+.translator-input{
+  font-size:18px!important;line-height:1.4;
+  min-height:120px;
+}
+.translator-input.zh{
+  font-family:"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;
+  font-size:22px!important;
+}
+
+.translator-output-wrap{
+  /* Empty by default, gets filled on translation */
+  display:contents;
+}
+.translator-loading{
+  text-align:center;padding:20px;
+  color:var(--ink-faint);font-style:italic;font-size:14px;
+}
+.translator-error{
+  background:rgba(139,26,26,.05);
+  border:1px solid rgba(139,26,26,.18);
+  border-radius:12px;padding:14px 16px;
+  font-size:13.5px;color:var(--ink-soft);line-height:1.5;
+}
+.translator-error b{color:var(--red);display:block;margin-bottom:4px;font-size:14px}
+.translator-error p{margin:0 0 6px}
+.translator-error p:last-child{margin:0}
+
+.translator-result{
+  background:linear-gradient(180deg, #fff, var(--paper-warm));
+  border:2px solid var(--gold);border-radius:14px;
+  padding:16px 18px;
+  box-shadow:0 4px 12px rgba(163,123,42,.10);
+}
+.translator-result-label{
+  font-size:11px;font-weight:700;color:var(--gold);
+  letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px;
+}
+.translator-result-text{
+  font-size:20px;color:var(--ink);line-height:1.4;
+  word-break:break-word;font-weight:500;
+}
+.translator-result-zh{
+  font-size:32px;font-weight:700;line-height:1.25;
+  letter-spacing:.02em;
+}
+.translator-result-actions{
+  display:flex;flex-direction:column;gap:8px;
+  margin-top:14px;
+}
+.translator-result-actions .btn-giant{
+  padding:14px 18px;font-size:15px;min-height:52px;
+}
+
+.translator-external{
+  margin-top:6px;
+}
+.translator-external-label{
+  font-size:11px;font-weight:700;color:var(--ink-soft);
+  letter-spacing:.16em;text-transform:uppercase;
+  margin-bottom:8px;text-align:center;
+}
+.translator-external-buttons{
+  display:flex;flex-direction:column;gap:8px;
+}
+.translator-ext-btn{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-radius:12px;
+  background:#fff;border:1.5px solid rgba(139,26,26,.15);
+  text-decoration:none;color:var(--ink);
+  transition:transform .12s, border-color .15s, box-shadow .15s;
+  min-height:60px;
+}
+.translator-ext-btn:hover{
+  border-color:rgba(139,26,26,.35);
+  box-shadow:0 3px 8px rgba(139,26,26,.10);
+}
+.translator-ext-btn:active{transform:scale(.98)}
+.translator-ext-icon{
+  font-size:24px;flex-shrink:0;width:36px;text-align:center;
+}
+.translator-ext-text{flex:1;min-width:0}
+.translator-ext-text b{
+  display:block;font-size:14.5px;font-weight:700;color:var(--ink);
+  line-height:1.2;margin-bottom:2px;
+}
+.translator-ext-text small{
+  display:block;font-size:11.5px;color:var(--ink-faint);
+  line-height:1.3;
+}
+.translator-ext-btn svg{color:var(--ink-faint);flex-shrink:0}
+.translator-ext-note{
+  font-size:12px;color:var(--ink-faint);font-style:italic;
+  text-align:center;padding:10px;line-height:1.4;
+  background:var(--paper-warm);border-radius:10px;
+}
+
+.translator-info{
+  background:rgba(163,123,42,.06);
+  border:1px solid rgba(163,123,42,.18);
+  border-radius:12px;padding:12px 14px;
+  font-size:12.5px;color:var(--ink-soft);line-height:1.5;
+}
+.translator-info b{color:var(--gold);display:block;margin-bottom:4px;font-size:13px}
+.translator-info p{margin:0}
+
+/* Taxi-style action button */
+.btn-taxi{
+  background:var(--red)!important;color:#fff!important;border-color:var(--red)!important;
+  font-weight:700;
+}
+.btn-taxi:hover{background:var(--red-deep)!important}
+
+/* Expenses summary card (top of Spese sheet) */
+.expenses-summary-card{
+  background:linear-gradient(135deg, var(--red) 0%, var(--red-deep) 100%);
+  color:var(--paper);border-radius:14px;padding:16px 18px;
+  margin:6px 0 14px;text-align:center;
+  box-shadow:0 4px 12px rgba(139,26,26,.20);
+}
+.expenses-summary-label{
+  font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  opacity:.8;font-weight:600;margin-bottom:6px;
+}
+.expenses-summary-amount{
+  font-family:ui-monospace,"SF Mono",monospace;
+  font-size:28px;font-weight:700;letter-spacing:.01em;
+}
+.expenses-summary-eur{
+  font-size:18px;font-weight:500;opacity:.85;margin-left:6px;
+}
+.expenses-summary-meta{
+  font-size:11.5px;opacity:.75;margin-top:4px;letter-spacing:.04em;
+}
+
+/* Expense review (Controlla) */
+.review-total-card{
+  background:linear-gradient(135deg, var(--red) 0%, var(--red-deep) 100%);
+  color:var(--paper);border-radius:16px;padding:20px 22px;
+  margin:6px 0 18px;text-align:center;
+  box-shadow:0 4px 14px rgba(139,26,26,.22);
+}
+.review-total-label{
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  opacity:.85;font-weight:600;
+}
+.review-total-cny{
+  font-family:ui-monospace,"SF Mono",monospace;
+  font-size:42px;font-weight:700;line-height:1.1;margin:6px 0 2px;
+  letter-spacing:.01em;
+}
+.review-total-eur{
+  font-family:ui-monospace,"SF Mono",monospace;
+  font-size:18px;font-weight:500;opacity:.9;
+}
+.review-total-meta{
+  font-size:11px;opacity:.7;margin-top:6px;letter-spacing:.06em;
+}
+.review-section-title{
+  font-family:"Noto Serif CJK SC","Songti SC",serif;
+  font-size:13px;font-weight:600;color:var(--gold);
+  letter-spacing:.12em;text-transform:uppercase;
+  margin:16px 0 8px;
+}
+
+/* Category breakdown bars */
+.cat-bars{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.cat-bar-row{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 0;
+}
+.cat-bar-icon{font-size:20px;flex-shrink:0;width:28px;text-align:center}
+.cat-bar-body{flex:1;min-width:0}
+.cat-bar-meta{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-bottom:4px;font-size:13px;
+}
+.cat-bar-label{color:var(--ink);font-weight:500}
+.cat-bar-amt{
+  font-family:ui-monospace,"SF Mono",monospace;
+  color:var(--ink-soft);font-size:12px;font-weight:600;
+}
+.cat-bar-track{
+  height:6px;background:rgba(139,26,26,.08);border-radius:3px;overflow:hidden;
+}
+.cat-bar-fill{
+  height:100%;background:linear-gradient(90deg, var(--gold), var(--red));
+  border-radius:3px;transition:width .4s ease;
+}
+
+/* Review list (chronological entries) */
+.review-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.review-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--paper-warm);border-radius:10px;
+  padding:10px 12px;
+}
+.review-cat{font-size:20px;flex-shrink:0;width:28px;text-align:center}
+.review-text{flex:1;min-width:0}
+.review-note{
+  font-size:13.5px;color:var(--ink);font-weight:500;line-height:1.3;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.review-meta{
+  font-size:11px;color:var(--ink-faint);margin-top:1px;letter-spacing:.02em;
+}
+.review-amt{
+  text-align:right;flex-shrink:0;
+  font-family:ui-monospace,"SF Mono",monospace;
+}
+.review-amt-cny{font-size:14px;color:var(--red);font-weight:700;line-height:1.1}
+.review-amt-eur{font-size:11px;color:var(--ink-faint);font-weight:500}
+.review-del{
+  background:none;border:none;color:var(--ink-faint);
+  font-size:22px;line-height:1;cursor:pointer;
+  width:28px;height:28px;flex-shrink:0;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.review-del:hover{background:rgba(139,26,26,.08);color:var(--red)}
+.expenses-empty{
+  padding:18px;text-align:center;font-style:italic;color:var(--ink-faint);
+  font-size:13px;background:var(--paper-warm);border-radius:10px;
+}
 
 /* PHRASEBOOK */
 .phrase-cat{font-family:"Noto Serif CJK SC","Songti SC",ui-serif,Georgia,serif;font-size:14px;color:var(--gold);margin:18px 0 8px;letter-spacing:.05em;text-transform:uppercase;font-weight:600}
@@ -1109,29 +1622,212 @@ section.active{display:block;animation:fade .35s ease}
 .form-photo-buttons{display:flex;gap:8px}
 .form-photo-buttons .btn{flex:1;justify-content:center}
 
+/* === FULLSCREEN SHEET === Used for expense entry & currency converter
+   Bigger inputs, bigger buttons, made for one-thumb operation. */
+.sheet.fullscreen{
+  top:0;bottom:0;height:100%;max-height:100vh;
+  border-radius:0;
+  padding:0 0 calc(20px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;
+}
+.sheet.fullscreen .sheet-handle{display:none}
+.fs-toolbar{
+  position:sticky;top:0;z-index:5;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;padding-top:calc(14px + env(safe-area-inset-top));
+  background:rgba(246,239,225,.96);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(139,26,26,.10);
+  min-height:54px;
+}
+.fs-toolbar-title{
+  font-family:"Noto Serif CJK SC","Songti SC",ui-serif,Georgia,serif;
+  font-size:18px;font-weight:600;color:var(--red);line-height:1;
+  flex:1;text-align:center;
+}
+.fs-close{
+  background:none;border:none;color:var(--ink-soft);
+  font-family:inherit;font-size:15px;font-weight:500;
+  cursor:pointer;padding:10px 14px;border-radius:10px;
+  display:inline-flex;align-items:center;gap:6px;
+  min-height:44px;min-width:60px;
+}
+.fs-close:hover{background:rgba(0,0,0,.04)}
+.fs-close svg{width:20px;height:20px}
+.fs-spacer{min-width:60px}
+.fs-body{
+  flex:1;overflow-y:auto;
+  padding:20px 20px 24px;
+  display:flex;flex-direction:column;gap:18px;
+}
+.fs-footer{
+  padding:14px 20px calc(14px + env(safe-area-inset-bottom));
+  background:rgba(246,239,225,.96);backdrop-filter:blur(12px);
+  border-top:1px solid rgba(139,26,26,.10);
+  display:flex;flex-direction:column;gap:8px;
+}
+
+/* Big form fields for fullscreen */
+.bigfield{display:flex;flex-direction:column;gap:8px}
+.bigfield-label{
+  font-size:13px;font-weight:700;color:var(--red);
+  letter-spacing:.08em;text-transform:uppercase;
+}
+.bigfield-hint{
+  font-size:12px;color:var(--ink-faint);font-style:italic;line-height:1.4;
+}
+.bigfield input,
+.bigfield textarea,
+.bigfield select{
+  width:100%;padding:16px 18px;
+  background:#fff;border:2px solid rgba(139,26,26,.15);border-radius:14px;
+  font-family:inherit;font-size:17px;color:var(--ink);font-weight:500;
+  line-height:1.4;min-height:56px;
+  transition:border-color .15s, box-shadow .15s;
+}
+.bigfield input:focus,
+.bigfield textarea:focus,
+.bigfield select:focus{
+  outline:none;border-color:var(--red);
+  box-shadow:0 0 0 3px rgba(139,26,26,.10);
+}
+.bigfield textarea{min-height:90px;resize:vertical}
+.bigfield select{
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='10' viewBox='0 0 14 10' fill='none' stroke='%238B1A1A' stroke-width='2'><polyline points='1 2 7 8 13 2'/></svg>");
+  background-repeat:no-repeat;background-position:right 18px center;
+  padding-right:44px;
+}
+
+/* Giant amount input — ¥ prefix on the left, big number on the right */
+.amount-field{
+  display:flex;align-items:stretch;
+  background:#fff;border:2px solid var(--red);border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(139,26,26,.08);
+  transition:box-shadow .15s, border-color .15s;
+}
+.amount-field:focus-within{
+  border-color:var(--red);
+  box-shadow:0 4px 14px rgba(139,26,26,.18);
+}
+.amount-field-prefix{
+  display:flex;align-items:center;justify-content:center;
+  padding:0 18px;background:linear-gradient(135deg, rgba(139,26,26,.08), rgba(163,123,42,.06));
+  font-family:ui-monospace,"SF Mono",monospace;
+  font-size:30px;font-weight:700;color:var(--red);
+  border-right:2px solid rgba(139,26,26,.15);
+  min-width:64px;
+}
+.amount-field-input{
+  flex:1;padding:14px 16px;border:none;background:none;
+  font-family:ui-monospace,"SF Mono",monospace;
+  font-size:32px;font-weight:700;color:var(--ink);
+  text-align:right;width:100%;
+  font-variant-numeric:tabular-nums;
+  min-height:64px;
+}
+.amount-field-input:focus{outline:none}
+.amount-field-input::placeholder{color:var(--ink-faint);font-weight:500}
+
+.amount-converted{
+  text-align:center;
+  font-family:ui-monospace,"SF Mono",monospace;
+  font-size:20px;font-weight:600;color:var(--gold);
+  padding:6px 0;
+}
+.amount-converted small{
+  display:block;font-size:11px;color:var(--ink-faint);
+  font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  font-family:inherit;margin-bottom:2px;
+}
+
+/* Big category picker for fullscreen — 3 cols, large tap targets */
+.cat-grid{
+  display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;
+}
+.cat-grid-btn{
+  background:#fff;border:2px solid rgba(139,26,26,.12);border-radius:14px;
+  padding:14px 8px;cursor:pointer;font-family:inherit;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  min-height:80px;
+  transition:transform .12s, border-color .15s, background .15s;
+}
+.cat-grid-btn:hover{border-color:rgba(139,26,26,.3)}
+.cat-grid-btn:active{transform:scale(.96)}
+.cat-grid-btn.active{
+  border-color:var(--red);background:rgba(139,26,26,.06);
+  box-shadow:0 2px 6px rgba(139,26,26,.12);
+}
+.cat-grid-icon{font-size:28px;line-height:1}
+.cat-grid-label{
+  font-size:12px;font-weight:600;color:var(--ink);line-height:1.2;
+  text-align:center;
+}
+.cat-grid-btn.active .cat-grid-label{color:var(--red)}
+
+/* Giant primary button for forms */
+.btn-giant{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:18px 20px;
+  background:var(--red);color:#fff;border:none;border-radius:16px;
+  font-family:inherit;font-size:17px;font-weight:700;
+  letter-spacing:.04em;cursor:pointer;
+  min-height:60px;
+  box-shadow:0 4px 14px rgba(139,26,26,.25);
+  transition:transform .12s, box-shadow .15s, background .15s;
+}
+.btn-giant:hover{background:var(--red-deep);box-shadow:0 6px 18px rgba(139,26,26,.35)}
+.btn-giant:active{transform:translateY(1px);box-shadow:0 2px 6px rgba(139,26,26,.25)}
+.btn-giant:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn-giant-secondary{
+  background:#fff;color:var(--ink);
+  border:2px solid rgba(139,26,26,.20);
+  box-shadow:none;
+}
+.btn-giant-secondary:hover{background:var(--paper-warm);border-color:rgba(139,26,26,.35)}
+
+/* Currency converter — big rate display + side-by-side inputs */
+.conv-rate-big{
+  background:linear-gradient(135deg, var(--red), var(--red-deep));
+  color:var(--paper);border-radius:18px;
+  padding:20px 22px;text-align:center;
+  box-shadow:0 6px 18px rgba(139,26,26,.22);
+}
+.conv-rate-big-label{
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  opacity:.85;font-weight:700;
+}
+.conv-rate-big-main{
+  font-family:ui-monospace,"SF Mono",monospace;
+  font-size:30px;font-weight:700;line-height:1.1;margin:6px 0 4px;
+  letter-spacing:.01em;
+}
+.conv-rate-big-meta{
+  font-size:12px;opacity:.8;margin-top:4px;letter-spacing:.02em;
+}
+.conv-pair{display:flex;flex-direction:column;gap:14px}
+.conv-arrow{
+  text-align:center;color:var(--gold);
+  margin:-4px 0;font-size:24px;line-height:1;
+}
+
 @media(min-width:600px){
   main{padding:0 24px}
   .hero-title{font-size:36px}
   .sheet{max-width:520px;left:50%;transform:translate(-50%, 100%);border-radius:20px;bottom:20px}
   .sheet.show{transform:translate(-50%, 0)}
+  /* Fullscreen sheet stays full-width on desktop too, capped at 600px */
+  .sheet.fullscreen{
+    max-width:600px;left:50%;right:auto;
+    transform:translate(-50%, 100%);
+    border-radius:20px;
+    top:20px;bottom:20px;height:auto;
+    max-height:calc(100vh - 40px);
+  }
+  .sheet.fullscreen.show{transform:translate(-50%, 0)}
 }
 
-/* === SUPABASE SYNC UI === */
-.account-btn{
-  background:none;border:1px solid rgba(139,26,26,.2);
-  border-radius:18px;padding:5px 10px 5px 7px;
-  color:var(--red);font-family:inherit;font-size:11px;font-weight:600;
-  display:inline-flex;align-items:center;gap:5px;cursor:pointer;
-  letter-spacing:.04em;line-height:1;
-}
-.account-btn.synced{border-color:rgba(45,93,79,.35);color:var(--jade)}
-.account-btn.syncing{border-color:rgba(163,123,42,.4);color:var(--gold)}
-.account-btn.offline{border-color:rgba(0,0,0,.12);color:var(--ink-faint)}
-.account-btn .sync-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:currentColor;flex-shrink:0;
-}
-.account-btn.syncing .sync-dot{animation:pulse 1.4s infinite}
+/* === SUPABASE AUTH SHEET STYLES === */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
 .auth-status{
@@ -1221,17 +1917,6 @@ section.active{display:block;animation:fade .35s ease}
   position:absolute;top:calc(env(safe-area-inset-top) + 16px);left:16px;
   color:rgba(255,255,255,.85);font-size:11px;letter-spacing:.15em;text-transform:uppercase;
 }
-
-/* === CURRENCY WIDGET === */
-.currency-pill{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:5px 10px;border-radius:18px;
-  background:rgba(163,123,42,.08);
-  border:1px solid rgba(163,123,42,.25);
-  color:var(--gold);font-family:ui-monospace,monospace;font-size:11px;font-weight:600;
-  cursor:pointer;letter-spacing:.02em;
-}
-.currency-pill b{font-family:inherit;color:var(--ink);font-weight:700}
 
 /* === WEATHER STRIP === */
 .weather-strip{
@@ -1363,20 +2048,27 @@ section.active{display:block;animation:fade .35s ease}
 <body>
 
 <header class="appbar">
-  <div class="appbar-row">
-    <div>
-      <div class="appbar-title">Cina · Agosto 2026</div>
-      <div class="appbar-sub" id="appbar-sub">programma di viaggio</div>
+  <div class="appbar-titleblock">
+    <h1 class="appbar-title">Cina · Agosto 2026</h1>
+    <div class="appbar-title-zh zh">中国 · 二零二六</div>
+    <div class="appbar-sub" id="appbar-sub">programma di viaggio</div>
+  </div>
+  <div class="today-banner" aria-label="Data e ora">
+    <div class="today-date-row">
+      <span class="today-weekday" id="today-weekday">—</span>
+      <span class="today-date-sep">·</span>
+      <span class="today-date" id="today-date">—</span>
     </div>
-    <div class="appbar-account">
-      <button class="currency-pill" onclick="openCurrencyConverter()" title="Convertitore valuta">
-        ¥<b>1</b>=€<b id="currency-rate">0.13</b>
-      </button>
-      <button class="account-btn offline" id="account-btn" onclick="openAuthSheet()" style="display:none">
-        <span class="sync-dot"></span>
-        <span id="account-btn-label">Accedi</span>
-      </button>
-      <div class="appbar-zh zh">中国 · 二零二六</div>
+    <div class="today-clocks" aria-live="polite">
+      <div class="today-clock">
+        <span class="today-clock-label">Italia</span>
+        <span class="today-clock-time" id="clock-it">—</span>
+      </div>
+      <span class="today-clock-sep" aria-hidden="true">·</span>
+      <div class="today-clock">
+        <span class="today-clock-label">Cina</span>
+        <span class="today-clock-time" id="clock-cn">—</span>
+      </div>
     </div>
   </div>
 </header>
@@ -1388,12 +2080,6 @@ section.active{display:block;animation:fade .35s ease}
     <div class="hero-eyebrow">Edizione 2026 · Roberto Pellizzoni</div>
     <h1 class="hero-title">Pechino · Chongqing<br>Chengdu · Wulong</h1>
     <div class="hero-zh zh">北京 · 重庆 · 成都 · 武隆</div>
-    <div class="hero-meta">
-      <div><b>16</b>giorni</div>
-      <div><b>4</b>destinazioni</div>
-      <div><b>2</b>voli intl.</div>
-      <div><b>13</b>—28 ago</div>
-    </div>
     <div class="countdown" id="countdown"></div>
   </div>
 
@@ -1459,10 +2145,50 @@ section.active{display:block;animation:fade .35s ease}
 
 </main>
 
-<nav class="tabbar">
-  <button class="tab active" data-view="home"><span class="tab-icon serif">日</span><span class="tab-label">Giorni</span></button>
-  <button class="tab" data-view="phrases"><span class="tab-icon serif">语</span><span class="tab-label">Frasario</span></button>
-  <button class="tab" data-view="prac"><span class="tab-icon serif">备</span><span class="tab-label">Pratico</span></button>
+<nav class="tabbar" role="tablist" aria-label="Navigazione principale">
+  <button class="tab tab-nav active" data-view="home" aria-label="Giorni del viaggio">
+    <span class="tab-icon-wrap">
+      <svg class="tab-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="16" rx="2"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <line x1="8" y1="3" x2="8" y2="7"/>
+        <line x1="16" y1="3" x2="16" y2="7"/>
+      </svg>
+      <span class="tab-icon-cn serif" aria-hidden="true">日</span>
+    </span>
+    <span class="tab-label">Giorni</span>
+  </button>
+  <button class="tab tab-action" id="tab-utilities" onclick="openUtilitiesSheet()" aria-label="Apri utilities: frasario, info pratiche, meteo, traduttore">
+    <span class="tab-icon-wrap">
+      <svg class="tab-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+        <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+      </svg>
+      <span class="tab-icon-cn serif" aria-hidden="true">备</span>
+    </span>
+    <span class="tab-label">Utilities</span>
+  </button>
+  <button class="tab tab-action admin-only" id="tab-expenses" onclick="openExpensesSheet()" aria-label="Spese: inserisci, controlla, convertitore" style="display:none">
+    <span class="tab-icon-wrap">
+      <svg class="tab-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/>
+      </svg>
+      <span class="tab-icon-cn serif" aria-hidden="true">费</span>
+    </span>
+    <span class="tab-label">Spese</span>
+  </button>
+  <button class="tab tab-account tab-action" id="tab-account" onclick="openAuthSheet()" aria-label="Accedi al tuo account">
+    <span class="tab-avatar offline" id="tab-avatar">
+      <span class="tab-avatar-dot" aria-hidden="true"></span>
+      <svg class="tab-avatar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 21c0-4.5 3.5-8 8-8s8 3.5 8 8"/>
+      </svg>
+    </span>
+    <span class="tab-label" id="tab-account-label">Accedi</span>
+  </button>
 </nav>
 
 <div class="sheet-backdrop" id="sheet-backdrop" onclick="closeSheet()"></div>
@@ -1992,12 +2718,14 @@ async function ensureSupabase(){
 }
 
 function setAccountUI(state, label){
-  const btn = $("account-btn");
-  if(!btn) return;
-  btn.style.display = "inline-flex";
-  btn.classList.remove("offline","syncing","synced");
-  btn.classList.add(state);
-  $("account-btn-label").textContent = label;
+  // Update the account tab in the bottom tabbar
+  const av = $("tab-avatar");
+  const lbl = $("tab-account-label");
+  if(av){
+    av.classList.remove("offline","syncing","synced");
+    av.classList.add(state);
+  }
+  if(lbl) lbl.textContent = label;
 }
 
 function requireAdmin(action){
@@ -2048,8 +2776,18 @@ async function bootstrapAuth(){
 
 function updateAuthUiLabel(){
   if(IS_ADMIN) setAccountUI("synced","Admin");
-  else if(_user) setAccountUI("synced","Sola lettura");
+  else if(_user) setAccountUI("synced","Profilo");
   else setAccountUI("offline","Accedi");
+  applyAdminUI();
+}
+
+// Show/hide admin-only UI bits based on the IS_ADMIN flag.
+// Currently: the "Spese" tab in the bottom tabbar.
+function applyAdminUI(){
+  const expensesTab = document.getElementById("tab-expenses");
+  if(expensesTab){
+    expensesTab.style.display = IS_ADMIN ? "" : "none";
+  }
 }
 
 window.openAuthSheet = async function(){
@@ -2366,7 +3104,7 @@ function persistSteps(){
 
 // === EXCHANGE RATE (CNY -> EUR) ===
 const RATE_KEY = "cina2026.rate";
-const DEFAULT_RATE = { eurPerCny: 0.128, fetched: 0 };  // approx fallback
+const DEFAULT_RATE = { eurPerCny: 0.128, fetched: 0, source: "default" };  // approx fallback
 function getRate(){
   try{ return JSON.parse(localStorage.getItem(RATE_KEY) || "null") || DEFAULT_RATE; }catch(e){ return DEFAULT_RATE; }
 }
@@ -2374,24 +3112,38 @@ function saveRate(r){ localStorage.setItem(RATE_KEY, JSON.stringify(r)); }
 
 async function refreshRateIfStale(){
   const r = getRate();
-  // refresh if older than 12h
-  if(Date.now() - r.fetched < 12*60*60*1000) return r;
+  // refresh if older than 6h
+  if(Date.now() - r.fetched < 6*60*60*1000) return r;
   try{
-    // Open-Meteo's sister project for currency or use exchangerate.host
     // exchangerate.host is free, no key
     const res = await fetch("https://api.exchangerate.host/latest?base=CNY&symbols=EUR");
     const j = await res.json();
     if(j && j.rates && j.rates.EUR){
-      const next = { eurPerCny: j.rates.EUR, fetched: Date.now() };
+      const next = { eurPerCny: j.rates.EUR, fetched: Date.now(), source: "live" };
       saveRate(next);
       return next;
     }
-  }catch(e){}
+  }catch(e){ /* offline: keep cached value */ }
   return r;
 }
 function cnyToEur(cny){
   const r = getRate();
   return cny * r.eurPerCny;
+}
+
+// Format the freshness of the saved rate for display in the converter
+function rateFreshnessLabel(){
+  const r = getRate();
+  if(!r.fetched){
+    return "valore di fallback · connettiti a internet per aggiornarlo";
+  }
+  const ageMs = Date.now() - r.fetched;
+  const hours = Math.floor(ageMs / (60*60*1000));
+  const days = Math.floor(hours / 24);
+  if(hours < 1) return "aggiornato pochi minuti fa";
+  if(hours < 24) return `aggiornato ${hours} ${hours===1?'ora':'ore'} fa`;
+  if(days === 1) return "aggiornato ieri · potrebbe non essere fresco";
+  return `aggiornato ${days} giorni fa · potrebbe non essere fresco`;
 }
 
 function renderHeroEditor(dayN){
@@ -2517,26 +3269,58 @@ window.removeTicketFor = function(dayN, encStopName){
 
 // === CURRENCY WIDGET ===
 window.openCurrencyConverter = async function(){
+  // Show the sheet immediately with cached rate, then refresh in background
+  const renderSheet = ()=>{
+    const r = getRate();
+    showSheet(`
+      <div class="fs-toolbar">
+        <button class="fs-close" onclick="closeSheet()" aria-label="Chiudi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="fs-toolbar-title">Convertitore</div>
+        <span class="fs-spacer"></span>
+      </div>
+      <div class="fs-body">
+        <div class="conv-rate-big">
+          <div class="conv-rate-big-label">Tasso di cambio</div>
+          <div class="conv-rate-big-main">¥1 = €${r.eurPerCny.toFixed(4)}</div>
+          <div class="conv-rate-big-meta">${rateFreshnessLabel()}</div>
+        </div>
+
+        <div class="conv-pair">
+          <div class="bigfield">
+            <span class="bigfield-label">Yuan (CNY) 元</span>
+            <div class="amount-field">
+              <span class="amount-field-prefix">¥</span>
+              <input id="conv-cny" class="amount-field-input" type="number" inputmode="decimal" oninput="convertFromCny(this.value)" placeholder="0" autofocus>
+            </div>
+          </div>
+
+          <div class="conv-arrow">⇅</div>
+
+          <div class="bigfield">
+            <span class="bigfield-label">Euro (EUR)</span>
+            <div class="amount-field">
+              <span class="amount-field-prefix">€</span>
+              <input id="conv-eur" class="amount-field-input" type="number" inputmode="decimal" oninput="convertFromEur(this.value)" placeholder="0">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fs-footer">
+        <button class="btn-giant btn-giant-secondary" onclick="closeSheet()">Chiudi</button>
+      </div>
+    `, { fullscreen: true });
+  };
+  renderSheet();
+  // Try to refresh in the background; if successful, re-render with fresh rate
+  const before = getRate().fetched;
   await refreshRateIfStale();
-  const r = getRate();
-  const fetched = r.fetched ? new Date(r.fetched).toLocaleString("it-IT") : "valore di base (offline)";
-  showSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-eyebrow">Convertitore valuta</div>
-    <h3 class="sheet-title">CNY ↔ EUR</h3>
-    <p style="font-size:12px;color:var(--ink-faint);margin:0 0 12px">Cambio: 1 CNY = ${r.eurPerCny.toFixed(4)} EUR · aggiornato ${fetched}</p>
-    <div class="editor-field">
-      <label>Yuan ¥</label>
-      <input id="conv-cny" type="number" inputmode="decimal" oninput="convertFromCny(this.value)" placeholder="0">
-    </div>
-    <div class="editor-field">
-      <label>Euro €</label>
-      <input id="conv-eur" type="number" inputmode="decimal" oninput="convertFromEur(this.value)" placeholder="0">
-    </div>
-    <div class="editor-actions">
-      <button class="editor-btn primary" onclick="closeSheet()">Chiudi</button>
-    </div>
-  `);
+  const after = getRate().fetched;
+  if(after !== before){
+    // If the sheet is still open, re-render to show new rate
+    if(document.getElementById("sheet").classList.contains("show")) renderSheet();
+  }
 };
 window.convertFromCny = function(v){
   const num = parseFloat(v) || 0;
@@ -2626,7 +3410,8 @@ window.openExpenseForm = function(dayN){
   }, 80);
 };
 window.pickCat = function(btn){
-  document.querySelectorAll(".cat-pick").forEach(b=>b.classList.remove("active"));
+  // Support both legacy .cat-pick and new .cat-grid-btn category pickers
+  document.querySelectorAll(".cat-pick, .cat-grid-btn").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
 };
 window.saveExpense = function(dayN){
@@ -2903,11 +3688,18 @@ function renderDailyPhrases(day){
 // =============================================================
 // SHEET (modal)
 // =============================================================
-function showSheet(html){
-  $("sheet").innerHTML = html;
+function showSheet(html, opts){
+  const sheet = $("sheet");
+  sheet.innerHTML = html;
+  // Apply or remove fullscreen modifier based on opts
+  if(opts && opts.fullscreen){
+    sheet.classList.add("fullscreen");
+  } else {
+    sheet.classList.remove("fullscreen");
+  }
   $("sheet-backdrop").classList.add("show");
-  $("sheet").classList.add("show");
-  $("sheet").scrollTop = 0;
+  sheet.classList.add("show");
+  sheet.scrollTop = 0;
 }
 window.closeSheet = function(){
   $("sheet-backdrop").classList.remove("show");
@@ -3552,18 +4344,790 @@ window.scrollToStop = function(idx){
 // =============================================================
 function showView(v){
   document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  // Only "tab-nav" buttons (not action triggers like Utilities/Cambio/Accedi)
+  // can become the persistently active tab.
+  document.querySelectorAll(".tab-nav").forEach(t=>t.classList.remove("active"));
   $("view-"+v).classList.add("active");
-  const tab=document.querySelector(`.tab[data-view="${v}"]`);
+  const tab=document.querySelector(`.tab-nav[data-view="${v}"]`);
   if(tab) tab.classList.add("active");
   if(v !== "day"){ currentDay = null; editMode = false; }
   window.scrollTo({top:0,behavior:"instant"});
 }
 window.showView = showView;
 
-document.querySelectorAll(".tab").forEach(t=>{
+// Click handlers for "true" navigation tabs only (data-view attribute).
+// Action tabs (Utilities, Cambio, Accedi) have their own onclick handlers.
+document.querySelectorAll(".tab-nav").forEach(t=>{
   t.addEventListener("click", ()=>showView(t.dataset.view));
 });
+
+// === UTILITIES BOTTOM SHEET (Frasario + Pratico + Meteo) ===
+window.openUtilitiesSheet = function(){
+  showSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-eyebrow">Utilities</div>
+    <h3 class="sheet-title">Cosa ti serve?</h3>
+    <div class="utilities-grid">
+      <button class="utility-card" onclick="closeSheet(); showView('phrases')">
+        <span class="utility-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 7v10a2 2 0 002 2h10l4 4V5a2 2 0 00-2-2H5a2 2 0 00-2 2z"/>
+            <line x1="7" y1="9" x2="13" y2="9"/>
+            <line x1="7" y1="13" x2="15" y2="13"/>
+          </svg>
+        </span>
+        <div class="utility-card-text">
+          <div class="utility-card-title">Frasario <span class="utility-card-title-zh zh">日常用语</span></div>
+          <div class="utility-card-desc">Frasi essenziali in cinese da mostrare a tassisti, camerieri, passanti.</div>
+        </div>
+        <svg class="utility-card-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+      <button class="utility-card" onclick="closeSheet(); showView('prac')">
+        <span class="utility-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11V7a3 3 0 016 0v4"/>
+            <rect x="5" y="11" width="14" height="10" rx="2"/>
+            <circle cx="12" cy="16" r="1"/>
+          </svg>
+        </span>
+        <div class="utility-card-text">
+          <div class="utility-card-title">Pratico <span class="utility-card-title-zh zh">实用信息</span></div>
+          <div class="utility-card-desc">Hotel, voli, app essenziali, numeri di emergenza, checklist e clima medio.</div>
+        </div>
+        <svg class="utility-card-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+      <button class="utility-card" onclick="openWeatherSheet()">
+        <span class="utility-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+        </span>
+        <div class="utility-card-text">
+          <div class="utility-card-title">Meteo <span class="utility-card-title-zh zh">天气预报</span></div>
+          <div class="utility-card-desc">Previsioni dei prossimi 7 giorni per Pechino, Chongqing e Chengdu.</div>
+        </div>
+        <svg class="utility-card-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+      <button class="utility-card" onclick="openTranslatorSheet()">
+        <span class="utility-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 5h12M9 3v2c0 4-3 8-7 9M5 9c0 3 3 5 9 6"/>
+            <path d="M14 21l4-9 4 9M16 17h4"/>
+          </svg>
+        </span>
+        <div class="utility-card-text">
+          <div class="utility-card-title">Traduttore <span class="utility-card-title-zh zh">翻译</span></div>
+          <div class="utility-card-desc">Traduci una parola o una frase. Italiano ⇄ Cinese, con scorciatoie alle app.</div>
+        </div>
+        <svg class="utility-card-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+      <button class="utility-card" onclick="openCurrencyConverter()">
+        <span class="utility-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 8h13M4 8l3-3M4 8l3 3M20 16H7m13 0l-3-3m3 3l-3 3"/>
+          </svg>
+        </span>
+        <div class="utility-card-text">
+          <div class="utility-card-title">Convertitore <span class="utility-card-title-zh zh">汇率</span></div>
+          <div class="utility-card-desc">Yuan ⇄ Euro al volo. Tasso aggiornato ogni 6 ore.</div>
+        </div>
+        <svg class="utility-card-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+    </div>
+  `);
+};
+
+// === WEATHER SHEET — first level: 3 city cards ===
+const WEATHER_CITIES = [
+  { id: "pechino",   name: "Pechino",   nameZh: "北京", lat: 39.9042, lng: 116.4074 },
+  { id: "chongqing", name: "Chongqing", nameZh: "重庆", lat: 29.5630, lng: 106.5516 },
+  { id: "chengdu",   name: "Chengdu",   nameZh: "成都", lat: 30.5728, lng: 104.0668 }
+];
+
+async function fetch7DayForecast(lat, lng){
+  // Cache key per coordinate, valid for 6h
+  const cache = getWeatherCache();
+  const key = `7d.${lat.toFixed(2)},${lng.toFixed(2)}`;
+  const cached = cache[key];
+  if(cached && (Date.now() - cached.fetched < 6*60*60*1000)) return cached.data;
+  try{
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&forecast_days=8&timezone=auto`;
+    const res = await fetch(url);
+    if(!res.ok) return null;
+    const j = await res.json();
+    if(j && j.daily){
+      cache[key] = { data: j.daily, fetched: Date.now() };
+      setWeatherCache(cache);
+      return j.daily;
+    }
+  }catch(e){ /* offline */ }
+  return null;
+}
+
+// Open the city picker sheet (first level)
+window.openWeatherSheet = async function(){
+  showSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-eyebrow">Meteo · 天气</div>
+    <h3 class="sheet-title">Scegli la città</h3>
+    <div class="utilities-grid" id="weather-cities-grid">
+      ${WEATHER_CITIES.map(c=>`
+        <button class="utility-card" onclick="openWeatherCity('${c.id}')">
+          <span class="utility-card-icon" id="weather-icon-${c.id}">
+            <span style="font-size:24px">⏳</span>
+          </span>
+          <div class="utility-card-text">
+            <div class="utility-card-title">${c.name} <span class="utility-card-title-zh zh">${c.nameZh}</span></div>
+            <div class="utility-card-desc" id="weather-summary-${c.id}">Caricamento previsioni…</div>
+          </div>
+          <svg class="utility-card-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+        </button>
+      `).join("")}
+    </div>
+  `);
+  // Fetch in parallel and update each card's icon + summary with today's data
+  await Promise.all(WEATHER_CITIES.map(async (c)=>{
+    const daily = await fetch7DayForecast(c.lat, c.lng);
+    const iconEl = document.getElementById(`weather-icon-${c.id}`);
+    const sumEl  = document.getElementById(`weather-summary-${c.id}`);
+    if(!iconEl || !sumEl) return; // sheet closed
+    if(!daily){
+      const climate = climatologyForCity(c.name);
+      iconEl.innerHTML = `<span style="font-size:26px">🌡️</span>`;
+      sumEl.textContent = `Media agosto: ${climate.tmin}°—${climate.tmax}°C · ${climate.desc}`;
+      return;
+    }
+    const code = (daily.weather_code && daily.weather_code[0]) || 0;
+    const tmax = Math.round(daily.temperature_2m_max[0]);
+    const tmin = Math.round(daily.temperature_2m_min[0]);
+    const desc = weatherDesc(code);
+    iconEl.innerHTML = `<span style="font-size:30px">${weatherIcon(code)}</span>`;
+    sumEl.textContent = `Oggi: ${desc} · max ${tmax}° / min ${tmin}°`;
+  }));
+};
+
+// Second level: full-screen detail for one city, vertical 7-day list
+window.openWeatherCity = async function(cityId){
+  const city = WEATHER_CITIES.find(c=> c.id === cityId);
+  if(!city) return;
+
+  // Open full-screen with placeholder, then fill in
+  const renderShell = (bodyHtml)=>{
+    showSheet(`
+      <div class="fs-toolbar">
+        <button class="fs-close" onclick="openWeatherSheet()" aria-label="Indietro">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="fs-toolbar-title">${htmlEscape(city.name)} · ${htmlEscape(city.nameZh)}</div>
+        <span class="fs-spacer"></span>
+      </div>
+      <div class="fs-body" id="weather-detail-body">${bodyHtml}</div>
+      <div class="fs-footer">
+        <button class="btn-giant btn-giant-secondary" onclick="closeSheet()">Chiudi</button>
+      </div>
+    `, { fullscreen: true });
+  };
+  renderShell(`<div class="weather-loading-big">Caricamento previsioni…</div>`);
+
+  const daily = await fetch7DayForecast(city.lat, city.lng);
+  const body = document.getElementById("weather-detail-body");
+  if(!body) return; // sheet closed
+
+  if(!daily){
+    const climate = climatologyForCity(city.name);
+    body.innerHTML = `
+      <div class="weather-fallback-big">
+        <div class="weather-fallback-emoji">🌡️</div>
+        <h3>Previsioni live non disponibili</h3>
+        <p>Sei offline o il viaggio è oltre 14 giorni dall'oggi.</p>
+        <div class="weather-fallback-stat">
+          <span class="weather-fallback-stat-label">Media per agosto</span>
+          <span class="weather-fallback-stat-val">${climate.tmin}° — ${climate.tmax}°C</span>
+        </div>
+        <p class="weather-fallback-desc">${climate.desc}</p>
+      </div>`;
+    return;
+  }
+
+  const days = daily.time.map((dateStr, i)=>{
+    const d = new Date(dateStr + "T00:00:00");
+    const isToday = i === 0;
+    const wd = isToday ? "Oggi" : d.toLocaleDateString("it-IT", { weekday: "long" });
+    const dm = d.toLocaleDateString("it-IT", { day: "numeric", month: "long" });
+    const code = (daily.weather_code && daily.weather_code[i]) || 0;
+    const tmax = Math.round(daily.temperature_2m_max[i]);
+    const tmin = Math.round(daily.temperature_2m_min[i]);
+    const rain = (daily.precipitation_probability_max && daily.precipitation_probability_max[i]) || 0;
+    return `
+      <div class="weather-big-row${isToday ? ' is-today' : ''}">
+        <div class="weather-big-when">
+          <div class="weather-big-wd">${wd}</div>
+          <div class="weather-big-dm">${dm}</div>
+        </div>
+        <div class="weather-big-mid">
+          <div class="weather-big-icon">${weatherIcon(code)}</div>
+          <div class="weather-big-desc">${weatherDesc(code)}</div>
+          ${rain >= 10 ? `<div class="weather-big-rain">💧 ${rain}% pioggia</div>` : ''}
+        </div>
+        <div class="weather-big-temp">
+          <div class="weather-big-tmax">${tmax}°</div>
+          <div class="weather-big-tmin">${tmin}°</div>
+        </div>
+      </div>`;
+  }).join("");
+  body.innerHTML = `<div class="weather-big-list">${days}</div>`;
+};
+
+// === BIG CHINESE CARD — generic popup that shows Chinese text large ===
+// Used both for the "show to taxi driver" feature and for phrasebook entries.
+window.openBigChinese = function({eyebrow, italian, zh, py, addrZh, coords, hint, copyText: copyTxt}){
+  const fullToCopy = copyTxt || (zh + (addrZh ? "\n"+addrZh : ""));
+  showSheet(`
+    <div class="fs-toolbar">
+      <button class="fs-close" onclick="closeSheet()" aria-label="Chiudi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="fs-toolbar-title">${htmlEscape(eyebrow || 'Mostra in cinese')}</div>
+      <span class="fs-spacer"></span>
+    </div>
+    <div class="fs-body" style="justify-content:center;align-items:stretch;padding-top:30px">
+      ${italian ? `<div class="bigcn-italian">${htmlEscape(italian)}</div>` : ''}
+      <div class="bigcn-card">
+        <div class="bigcn-zh zh">${htmlEscape(zh)}</div>
+        ${addrZh ? `<div class="bigcn-addr zh">${htmlEscape(addrZh)}</div>` : ''}
+        ${py ? `<div class="bigcn-py">${htmlEscape(py)}</div>` : ''}
+        ${coords ? `<div class="bigcn-coords">📍 ${htmlEscape(coords)}</div>` : ''}
+      </div>
+      ${hint ? `<div class="bigcn-hint">${htmlEscape(hint)}</div>` : ''}
+    </div>
+    <div class="fs-footer">
+      <button class="btn-giant" onclick="copyText('${attrEscape(fullToCopy)}', 'Cinese copiato')">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+        Copia
+      </button>
+      <button class="btn-giant btn-giant-secondary" onclick="closeSheet()">Chiudi</button>
+    </div>
+  `, { fullscreen: true });
+};
+
+// === TAXI CARD — wrapper around openBigChinese for stops ===
+window.openTaxiCard = function(dayN, stopIdx){
+  const day = DAYS.find(d=> d.n === dayN);
+  if(!day) return;
+  const stop = day.stops[stopIdx];
+  if(!stop || !stop.zh) return;
+  const coords = stop.coords && stop.coords.length===2
+    ? `${stop.coords[0].toFixed(5)}, ${stop.coords[1].toFixed(5)}`
+    : null;
+  openBigChinese({
+    eyebrow: 'Per il tassista',
+    italian: stop.name,
+    zh: stop.zh,
+    addrZh: stop.addr_zh || null,
+    py: stop.py || null,
+    coords: coords,
+    hint: 'Mostra lo schermo al tassista. Tap su "Copia" per incollare nel chat di Didi.'
+  });
+};
+
+// === PHRASE CARD — wrapper around openBigChinese for phrasebook ===
+window.openPhraseCard = function(phraseB64){
+  let p;
+  try{ p = JSON.parse(decodeURIComponent(atob(phraseB64))); }catch(e){ return; }
+  openBigChinese({
+    eyebrow: 'Frase in cinese',
+    italian: p.it,
+    zh: p.zh,
+    py: p.py,
+    hint: 'Mostra lo schermo a chi devi parlare.'
+  });
+};
+
+// === TRANSLATOR — MyMemory API + deep-links to Microsoft Translator & Pleco ===
+// Direction state lives outside the function so it persists across re-opens
+let _translatorDir = "it-zh"; // "it-zh" or "zh-it"
+let _translatorLastResult = null; // { input, output, dir }
+
+function _myMemoryLangPair(dir){
+  return dir === "it-zh" ? "it|zh-CN" : "zh-CN|it";
+}
+
+async function callMyMemory(text, dir){
+  const langpair = _myMemoryLangPair(dir);
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langpair}&de=traveler@example.com`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("Errore di rete (HTTP " + res.status + ")");
+  const j = await res.json();
+  if(j && j.responseStatus !== 200 && j.responseStatus !== "200"){
+    throw new Error(j.responseDetails || "Errore del servizio");
+  }
+  const out = j && j.responseData && j.responseData.translatedText;
+  if(!out) throw new Error("Nessuna traduzione restituita");
+  return out;
+}
+
+window.openTranslatorSheet = function(){
+  const dir = _translatorDir;
+  const fromLabel = dir === "it-zh" ? "Italiano" : "Cinese";
+  const toLabel   = dir === "it-zh" ? "Cinese"   : "Italiano";
+  const fromZh    = dir === "it-zh" ? "" : " 中文";
+  const inputClass = dir === "zh-it" ? "translator-input zh" : "translator-input";
+  const inputPlaceholder = dir === "it-zh"
+    ? "Scrivi qui in italiano…\nes. \"Quanto costa?\""
+    : "写中文…\n例: 你好";
+
+  showSheet(`
+    <div class="fs-toolbar">
+      <button class="fs-close" onclick="closeSheet()" aria-label="Chiudi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="fs-toolbar-title">Traduttore</div>
+      <span class="fs-spacer"></span>
+    </div>
+    <div class="fs-body">
+      <div class="translator-direction" role="tablist" aria-label="Direzione di traduzione">
+        <button class="translator-dir-btn ${dir==='it-zh'?'active':''}" onclick="switchTranslatorDir('it-zh')" role="tab" aria-selected="${dir==='it-zh'}">Italiano → Cinese</button>
+        <button class="translator-dir-btn ${dir==='zh-it'?'active':''}" onclick="switchTranslatorDir('zh-it')" role="tab" aria-selected="${dir==='zh-it'}">Cinese → Italiano</button>
+      </div>
+
+      <div class="bigfield">
+        <span class="bigfield-label">${fromLabel}${fromZh}</span>
+        <textarea id="translator-input" class="${inputClass}" placeholder="${inputPlaceholder}" autofocus></textarea>
+      </div>
+
+      <button class="btn-giant" onclick="runTranslation()">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        Traduci
+      </button>
+
+      <div id="translator-output" class="translator-output-wrap" aria-live="polite"></div>
+
+      <div class="translator-info">
+        <b>ℹ️ Sul traduttore</b>
+        <p>La traduzione "veloce" qui dentro usa MyMemory: utile per parole singole o frasi semplici, ma non sempre accurata. Per frasi complesse o sfumature, apri Microsoft Translator (funziona anche in Cina) o Pleco (dizionario cinese di riferimento).</p>
+      </div>
+    </div>
+    <div class="fs-footer">
+      <button class="btn-giant btn-giant-secondary" onclick="closeSheet()">Chiudi</button>
+    </div>
+  `, { fullscreen: true });
+
+  // If we have a previous result for the same direction, show it again
+  if(_translatorLastResult && _translatorLastResult.dir === dir){
+    const inp = document.getElementById("translator-input");
+    if(inp) inp.value = _translatorLastResult.input;
+    renderTranslationResult(_translatorLastResult.output, _translatorLastResult.input, dir);
+  }
+};
+
+window.switchTranslatorDir = function(newDir){
+  if(newDir === _translatorDir) return;
+  // Carry over current input if it makes sense (swap source/target visually)
+  const inp = document.getElementById("translator-input");
+  const currentText = inp ? inp.value : "";
+  _translatorDir = newDir;
+  // Clear last result since it was for a different direction
+  _translatorLastResult = null;
+  openTranslatorSheet();
+  // Restore the user's typed text in the input (it may now be in "wrong" lang
+  // but we don't presume to discard their typing)
+  setTimeout(()=>{
+    const inp2 = document.getElementById("translator-input");
+    if(inp2 && currentText) inp2.value = currentText;
+  }, 30);
+};
+
+window.runTranslation = async function(){
+  const inp = document.getElementById("translator-input");
+  const out = document.getElementById("translator-output");
+  if(!inp || !out) return;
+  const text = (inp.value || "").trim();
+  if(!text){ showToast("Scrivi qualcosa da tradurre"); return; }
+  if(text.length > 500){ showToast("Massimo 500 caratteri"); return; }
+
+  out.innerHTML = `<div class="translator-loading">Traduzione in corso…</div>`;
+  try{
+    const translated = await callMyMemory(text, _translatorDir);
+    _translatorLastResult = { input: text, output: translated, dir: _translatorDir };
+    renderTranslationResult(translated, text, _translatorDir);
+  }catch(err){
+    out.innerHTML = `
+      <div class="translator-error">
+        <b>Traduzione non disponibile</b>
+        <p>${htmlEscape(err.message || "Errore sconosciuto")}. Forse sei offline o hai esaurito la quota giornaliera (5000 caratteri/giorno).</p>
+        <p style="margin-top:8px">Puoi comunque aprire le app dedicate qui sotto:</p>
+        ${renderExternalAppButtons(text, _translatorDir)}
+      </div>`;
+  }
+};
+
+function renderTranslationResult(translated, sourceText, dir){
+  const out = document.getElementById("translator-output");
+  if(!out) return;
+  const isOutputChinese = dir === "it-zh";
+  const outClass = isOutputChinese ? "translator-result-text zh translator-result-zh" : "translator-result-text";
+  out.innerHTML = `
+    <div class="translator-result">
+      <div class="translator-result-label">Traduzione</div>
+      <div class="${outClass}">${htmlEscape(translated)}</div>
+      <div class="translator-result-actions">
+        <button class="btn-giant" onclick="copyText('${attrEscape(translated)}', 'Traduzione copiata')">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+          Copia
+        </button>
+        ${isOutputChinese ? `
+          <button class="btn-giant btn-giant-secondary" onclick="openBigChinese({eyebrow:'Traduzione',italian:${JSON.stringify(sourceText)},zh:${JSON.stringify(translated)},hint:'Mostra lo schermo a chi devi parlare.'})">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z"/><line x1="7" y1="11" x2="17" y2="11"/></svg>
+            Mostra grande
+          </button>` : ''}
+      </div>
+    </div>
+    <div class="translator-external">
+      <div class="translator-external-label">Per traduzioni più precise</div>
+      ${renderExternalAppButtons(sourceText, dir)}
+    </div>
+  `;
+}
+
+// External-app deep-links: Microsoft Translator (universal URL) + Pleco (custom scheme)
+function renderExternalAppButtons(text, dir){
+  const fromCode = dir === "it-zh" ? "it" : "zh-Hans";
+  const toCode   = dir === "it-zh" ? "zh-Hans" : "it";
+  const bingUrl  = `https://www.bing.com/translator?text=${encodeURIComponent(text)}&from=${fromCode}&to=${toCode}`;
+
+  // Pleco is a Chinese-language dictionary — only useful when source OR target is Chinese
+  // For IT → ZH: open Pleco with the source italian text won't work (Pleco doesn't translate
+  // FROM italian); for ZH → IT: open Pleco directly with the chinese input.
+  // So we always offer Pleco, but pass the chinese text (input or output, depending on dir).
+  // We escape it carefully so it survives JSON encoding.
+  const plecoText = dir === "zh-it" ? text : ""; // for IT→ZH, we don't have the chinese yet at this point
+  const plecoUrl = plecoText ? `plecoapi://x-callback-url/s?q=${encodeURIComponent(plecoText)}` : null;
+
+  return `
+    <div class="translator-external-buttons">
+      <a class="translator-ext-btn" href="${bingUrl}" target="_blank" rel="noopener">
+        <span class="translator-ext-icon">🔤</span>
+        <span class="translator-ext-text">
+          <b>Microsoft Translator</b>
+          <small>Funziona anche in Cina senza VPN</small>
+        </span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+      </a>
+      ${plecoUrl ? `
+        <a class="translator-ext-btn" href="${plecoUrl}">
+          <span class="translator-ext-icon">📚</span>
+          <span class="translator-ext-text">
+            <b>Pleco</b>
+            <small>Dizionario cinese, ottimo per parole singole</small>
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+        </a>
+      ` : `
+        <div class="translator-ext-note">Pleco è disponibile dopo aver tradotto in cinese (è un dizionario cinese).</div>
+      `}
+    </div>
+  `;
+}
+
+// === EXPENSES BOTTOM SHEET — Inserisci / Controlla / Convertitore ===
+window.openExpensesSheet = function(){
+  if(!requireAdmin("Solo l'amministratore può accedere alle spese")) return;
+  showSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-eyebrow">Spese · 花费</div>
+    <h3 class="sheet-title">Cosa vuoi fare?</h3>
+    <div class="utilities-grid">
+      <button class="utility-card" onclick="openExpenseInsert()">
+        <span class="utility-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </span>
+        <div class="utility-card-text">
+          <div class="utility-card-title">Inserisci spesa</div>
+          <div class="utility-card-desc">Aggiungi una spesa scegliendo giorno, categoria e importo.</div>
+        </div>
+        <svg class="utility-card-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+      <button class="utility-card" onclick="openExpenseReview()">
+        <span class="utility-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v18h18"/>
+            <path d="M7 14l4-4 4 4 5-5"/>
+          </svg>
+        </span>
+        <div class="utility-card-text">
+          <div class="utility-card-title">Controlla spese</div>
+          <div class="utility-card-desc">Vista d'insieme con totali, suddivisione per categoria e storico.</div>
+        </div>
+        <svg class="utility-card-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+      <button class="utility-card" onclick="openCurrencyConverter()">
+        <span class="utility-card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 8h13M4 8l3-3M4 8l3 3M20 16H7m13 0l-3-3m3 3l-3 3"/>
+          </svg>
+        </span>
+        <div class="utility-card-text">
+          <div class="utility-card-title">Convertitore valuta</div>
+          <div class="utility-card-desc">¥ → € e viceversa. Tasso aggiornato ogni 6 ore.</div>
+        </div>
+        <svg class="utility-card-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+    </div>
+  `);
+};
+
+// === EXPENSE INSERT — full-screen form, big fields, one-thumb friendly ===
+window.openExpenseInsert = function(dayN){
+  if(!requireAdmin("Solo l'amministratore può inserire spese")) return;
+  // Default day: today's day-of-trip if we're traveling, else "general"
+  const today = findToday();
+  const defaultDay = (typeof dayN === "number") ? dayN : (today ? today.n : "general");
+  const dayOpts = [`<option value="general"${defaultDay === "general" ? " selected" : ""}>Generale (non legato a un giorno)</option>`]
+    .concat(DAYS.map(d=>{
+      const lbl = `Giorno ${d.n} · ${d.dayLabel} · ${d.city}`;
+      return `<option value="${d.n}"${defaultDay === d.n ? " selected" : ""}>${htmlEscape(lbl)}</option>`;
+    })).join("");
+
+  showSheet(`
+    <div class="fs-toolbar">
+      <button class="fs-close" onclick="closeSheet()" aria-label="Annulla">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="fs-toolbar-title">Nuova spesa</div>
+      <span class="fs-spacer"></span>
+    </div>
+    <div class="fs-body">
+      <div class="bigfield">
+        <span class="bigfield-label">Importo in Yuan</span>
+        <div class="amount-field">
+          <span class="amount-field-prefix">¥</span>
+          <input id="exp-amount" class="amount-field-input" type="number" inputmode="decimal" placeholder="0" autofocus>
+        </div>
+        <div class="amount-converted" id="exp-eur-display">
+          <small>Equivalente</small>
+          —
+        </div>
+      </div>
+
+      <div class="bigfield">
+        <span class="bigfield-label">Categoria</span>
+        <div class="cat-grid" id="cat-picker">
+          ${EXPENSE_CATS.map((c,i)=>`<button type="button" class="cat-grid-btn ${i===0?'active':''}" data-cat="${c.id}" onclick="pickCat(this)"><span class="cat-grid-icon">${c.icon}</span><span class="cat-grid-label">${c.label}</span></button>`).join("")}
+        </div>
+      </div>
+
+      <div class="bigfield">
+        <span class="bigfield-label">Giorno</span>
+        <select id="exp-day">${dayOpts}</select>
+      </div>
+
+      <div class="bigfield">
+        <span class="bigfield-label">Nota</span>
+        <textarea id="exp-note" placeholder="es. ravioli alla stazione, biglietto metro…"></textarea>
+        <span class="bigfield-hint">Opzionale, ma utile per ricordarsi cos'era</span>
+      </div>
+    </div>
+    <div class="fs-footer">
+      <button class="btn-giant" onclick="saveExpenseFromSheet()">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Salva spesa
+      </button>
+    </div>
+  `, { fullscreen: true });
+
+  // Live EUR conversion as you type
+  setTimeout(()=>{
+    const a = $("exp-amount");
+    const out = $("exp-eur-display");
+    if(a && out){
+      a.addEventListener("input", ()=>{
+        const v = parseFloat(a.value) || 0;
+        if(v > 0){
+          out.innerHTML = `<small>Equivalente</small>€${(v*getRate().eurPerCny).toFixed(2)}`;
+        } else {
+          out.innerHTML = `<small>Equivalente</small>—`;
+        }
+      });
+      a.focus();
+    }
+  }, 80);
+};
+
+window.saveExpenseFromSheet = function(){
+  if(!requireAdmin("Solo l'amministratore può salvare spese")) return;
+  const amount = parseFloat($("exp-amount").value) || 0;
+  if(amount <= 0){ showToast("Inserisci un importo"); return; }
+  const note = ($("exp-note").value || "").trim();
+  const catBtn = document.querySelector(".cat-grid-btn.active, .cat-pick.active");
+  const cat = catBtn ? catBtn.dataset.cat : "altro";
+  const dayVal = $("exp-day").value;
+  const dayKey = dayVal === "general" ? "general" : parseInt(dayVal, 10);
+  if(!EXPENSES[dayKey]) EXPENSES[dayKey] = [];
+  EXPENSES[dayKey].push({ amount, cat, note, ts: Date.now() });
+  persistExpenses();
+  closeSheet();
+  showToast("Spesa salvata");
+  // If we were viewing the day this expense was added to, refresh it
+  if(currentDay !== null && currentDay === dayKey) showDay(currentDay);
+};
+
+// === EXPENSE REVIEW — full-screen overview of all expenses ===
+window.openExpenseReview = function(){
+  if(!requireAdmin("Solo l'amministratore può vedere il riepilogo spese")) return;
+  // Gather all expenses across all days, sorted chronologically
+  const all = [];
+  Object.keys(EXPENSES).forEach(k=>{
+    const dayKey = k === "general" ? "general" : parseInt(k, 10);
+    (EXPENSES[k] || []).forEach((e, idx)=>{
+      all.push({ ...e, dayKey, idx });
+    });
+  });
+  all.sort((a,b)=> (a.ts || 0) - (b.ts || 0));
+
+  const totalCny = all.reduce((s, e)=> s + (e.amount || 0), 0);
+  const totalEur = cnyToEur(totalCny);
+
+  // Breakdown per category
+  const byCat = {};
+  EXPENSE_CATS.forEach(c=>{ byCat[c.id] = 0; });
+  all.forEach(e=>{ byCat[e.cat] = (byCat[e.cat] || 0) + (e.amount || 0); });
+  const catBars = EXPENSE_CATS
+    .filter(c=> byCat[c.id] > 0)
+    .sort((a,b)=> byCat[b.id] - byCat[a.id])
+    .map(c=>{
+      const amt = byCat[c.id];
+      const pct = totalCny > 0 ? (amt / totalCny * 100) : 0;
+      return `
+        <div class="cat-bar-row">
+          <span class="cat-bar-icon">${c.icon}</span>
+          <div class="cat-bar-body">
+            <div class="cat-bar-meta">
+              <span class="cat-bar-label">${c.label}</span>
+              <span class="cat-bar-amt">¥${amt.toFixed(0)} · ${pct.toFixed(0)}%</span>
+            </div>
+            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
+          </div>
+        </div>`;
+    }).join("");
+
+  // Chronological list of all entries
+  const rows = all.length === 0 ? `
+    <div class="expenses-empty">Nessuna spesa registrata. Inseriscine una dalla schermata precedente.</div>
+  ` : all.map(e=>{
+    const cat = EXPENSE_CATS.find(c=>c.id===e.cat) || EXPENSE_CATS[5];
+    const dayLabel = e.dayKey === "general"
+      ? "Generale"
+      : (function(){ const d = DAYS.find(x=>x.n===e.dayKey); return d ? `Giorno ${d.n} · ${d.city}` : `Giorno ${e.dayKey}`; })();
+    const ts = e.ts ? new Date(e.ts).toLocaleDateString("it-IT", { day: "numeric", month: "short" }) : "";
+    const eur = cnyToEur(e.amount || 0);
+    return `
+      <div class="review-row">
+        <span class="review-cat">${cat.icon}</span>
+        <div class="review-text">
+          <div class="review-note">${htmlEscape(e.note || cat.label)}</div>
+          <div class="review-meta">${htmlEscape(dayLabel)}${ts ? ' · '+ts : ''}</div>
+        </div>
+        <div class="review-amt">
+          <div class="review-amt-cny">¥${(e.amount||0).toFixed(0)}</div>
+          <div class="review-amt-eur">€${eur.toFixed(2)}</div>
+        </div>
+        ${IS_ADMIN ? `<button class="review-del" onclick="deleteExpenseFromReview('${e.dayKey}', ${e.idx})" aria-label="Elimina spesa">×</button>` : ''}
+      </div>`;
+  }).join("");
+
+  showSheet(`
+    <div class="fs-toolbar">
+      <button class="fs-close" onclick="closeSheet()" aria-label="Chiudi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="fs-toolbar-title">Riepilogo spese</div>
+      <span class="fs-spacer"></span>
+    </div>
+    <div class="fs-body">
+      <div class="review-total-card">
+        <div class="review-total-label">Totale viaggio</div>
+        <div class="review-total-cny">¥${totalCny.toFixed(0)}</div>
+        <div class="review-total-eur">≈ €${totalEur.toFixed(2)}</div>
+        <div class="review-total-meta">${all.length} ${all.length === 1 ? 'voce' : 'voci'}</div>
+      </div>
+      ${catBars ? `
+        <div>
+          <div class="review-section-title">Per categoria</div>
+          <div class="cat-bars">${catBars}</div>
+        </div>` : ''}
+      <div>
+        <div class="review-section-title">Storico</div>
+        <div class="review-list">${rows}</div>
+      </div>
+    </div>
+    <div class="fs-footer">
+      <button class="btn-giant" onclick="openExpenseInsert()">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuova spesa
+      </button>
+      <button class="btn-giant btn-giant-secondary" onclick="closeSheet()">Chiudi</button>
+    </div>
+  `, { fullscreen: true });
+};
+
+window.deleteExpenseFromReview = function(dayKeyStr, idx){
+  if(!requireAdmin("Solo l'amministratore può eliminare spese")) return;
+  if(!confirm("Eliminare questa spesa?")) return;
+  const dayKey = dayKeyStr === "general" ? "general" : parseInt(dayKeyStr, 10);
+  if(!EXPENSES[dayKey]) return;
+  EXPENSES[dayKey].splice(idx, 1);
+  if(EXPENSES[dayKey].length === 0) delete EXPENSES[dayKey];
+  persistExpenses();
+  // Re-render the review sheet
+  openExpenseReview();
+};
+
+// === LIVE CLOCKS (Italy + China) ===
+function fmtClock(date, tz){
+  return new Intl.DateTimeFormat("it-IT", {
+    timeZone: tz,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(date);
+}
+function updateClocks(){
+  const now = new Date();
+  const itEl = document.getElementById("clock-it");
+  const cnEl = document.getElementById("clock-cn");
+  if(itEl) itEl.textContent = fmtClock(now, "Europe/Rome");
+  if(cnEl) cnEl.textContent = fmtClock(now, "Asia/Shanghai");
+}
+function startClocks(){
+  updateClocks();
+  // Align next tick to the start of the next minute, then run every minute
+  const now = new Date();
+  const msToNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+  setTimeout(()=>{
+    updateClocks();
+    setInterval(updateClocks, 60000);
+  }, msToNextMinute);
+  // Also refresh when the app comes back to foreground (sleep/wake)
+  document.addEventListener("visibilitychange", ()=>{
+    if(!document.hidden) updateClocks();
+  });
+}
+
+// === TODAY BANNER (header) ===
+function renderTodayBanner(){
+  const wd = $("today-weekday");
+  const dt = $("today-date");
+  if(!wd || !dt) return;
+  const now = TODAY || new Date();
+  const weekday = now.toLocaleDateString("it-IT", { weekday: "long" });
+  const date = now.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+  wd.textContent = weekday;
+  dt.textContent = date;
+}
 
 // HOME
 function renderHome(){
@@ -3630,8 +5194,6 @@ window.showDay = function(n){
       <div class="detail-summary">${htmlEscape(d.summary)}</div>
     </div>
 
-    <div id="weather-${n}" class="weather-strip" style="display:none"></div>
-
     ${renderMap(d.stops)}
 
     ${IS_ADMIN ? `<div class="edit-toolbar">
@@ -3656,7 +5218,6 @@ window.showDay = function(n){
     </div>
 
     ${renderDailyPhrases(d)}
-    ${renderExpenses(n)}
     ${renderSteps(n)}
 
     ${(d.info||[]).map(b=>`
@@ -3668,12 +5229,6 @@ window.showDay = function(n){
   `;
   $("day-detail").innerHTML = html;
   showView("day");
-  // Async weather fetch (shows strip when ready)
-  if(d.stops.find(s => s.coords && s.coords.length===2)){
-    const wEl = document.getElementById(`weather-${n}`);
-    if(wEl) wEl.style.display = "flex";
-    renderWeatherInto(`weather-${n}`, n, d);
-  }
 };
 
 function renderStop(s, n, dayN, stopIdx, total){
@@ -3735,7 +5290,11 @@ function renderStop(s, n, dayN, stopIdx, total){
           </button>`:""}
           ${s.zh?`<button class="btn btn-gold" onclick="copyText('${attrEscape(s.zh)}', 'Cinese copiato')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
-            Copia 中文
+            Copia
+          </button>`:""}
+          ${s.zh?`<button class="btn btn-taxi" onclick="openTaxiCard(${dayN}, ${stopIdx})" aria-label="Mostra al tassista in cinese">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 17h14M7 17v-5l2-5h6l2 5v5M9 7h6"/><circle cx="8" cy="17" r="1.5" fill="currentColor"/><circle cx="16" cy="17" r="1.5" fill="currentColor"/></svg>
+            In cinese
           </button>`:""}
           ${IS_ADMIN ? `<button class="visited-toggle ${isVisited?'is-visited':''}" onclick="toggleVisited(${dayN}, '${jsEnc(s.name)}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="20 6 9 17 4 12"/></svg>
@@ -3762,7 +5321,9 @@ function renderStop(s, n, dayN, stopIdx, total){
 function renderPhrases(){
   $("phrases").innerHTML = PHRASES.map(cat=>`
     <div class="phrase-cat">${htmlEscape(cat.cat)}</div>
-    ${cat.items.map(p=>`
+    ${cat.items.map(p=>{
+      const phraseB64 = btoa(encodeURIComponent(JSON.stringify(p)));
+      return `
       <div class="phrase">
         <div class="phrase-it">${htmlEscape(p.it)}</div>
         <div class="phrase-zh zh">${htmlEscape(p.zh)}</div>
@@ -3770,11 +5331,15 @@ function renderPhrases(){
         <div class="stop-actions">
           <button class="btn btn-gold" onclick="copyText('${attrEscape(p.zh)}', 'Frase copiata')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
-            Copia 中文
+            Copia
+          </button>
+          <button class="btn btn-taxi" onclick="openPhraseCard('${phraseB64}')" aria-label="Mostra la frase in grande">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z"/><line x1="7" y1="11" x2="17" y2="11"/><line x1="7" y1="15" x2="13" y2="15"/></svg>
+            Mostra grande
           </button>
         </div>
-      </div>
-    `).join("")}
+      </div>`;
+    }).join("")}
   `).join("");
 }
 
@@ -3836,12 +5401,12 @@ function renderPractical(){
 renderHome();
 renderPhrases();
 renderPractical();
+renderTodayBanner();
+startClocks();
+applyAdminUI();   // hide admin-only UI bits until login confirms admin status
 bootstrapAuth();
-// Refresh currency rate in background
-refreshRateIfStale().then(r => {
-  const el = document.getElementById("currency-rate");
-  if(el) el.textContent = r.eurPerCny.toFixed(2);
-});
+// Refresh currency rate in background (used by Spese sheet & Utilities)
+refreshRateIfStale();
 </script>
 </body>
 </html>
